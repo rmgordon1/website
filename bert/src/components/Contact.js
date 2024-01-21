@@ -59,31 +59,33 @@ const Contact = () => {
         <div className="row">
           <div className="col-lg-5 col-xl-4 m-15px-tb">
             <div className="contact-info">
-              <h4>What’s your story? Get in touch</h4>
+              <h4>Contact Details:</h4>
               <p>
-                Always available for freelancing if the right project comes
-                along, Feel free to contact me.
+                Always looking for smart people with good ideas. Feel free to contact me for anything!
               </p>
               <ul>
                 <li className="media">
                   <i className="ti-map" />
                   <span className="media-body">
-                    123 Stree New York City , United States Of America 750065.
+                    1257 Sunnyfield Lane, Scotch Plains, 07076, USA.
                   </span>
                 </li>
                 <li className="media">
                   <i className="ti-email" />
-                  <span className="media-body">support@domain.com</span>
+                  <span className="media-body">robertmgordon15@gmail.com</span>
                 </li>
                 <li className="media">
                   <i className="ti-mobile" />
-                  <span className="media-body">+044 9696 9696 3636</span>
+                  <span className="media-body">+1 908 447 9562</span>
                 </li>
               </ul>
             </div>
           </div>
           <div className="col-lg-7 col-xl-8 m-15px-tb">
-            <div className="contact-form">
+            
+
+
+            {/* <div className="contact-form">
               <h4>Say Something</h4>
               <form id="contact-form" onSubmit={(e) => onSubmit(e)}>
                 <div className="row">
@@ -148,7 +150,7 @@ const Contact = () => {
                     </div>
                   </div>
                   <div className="col-md-12">
-                    <div className="send">
+                    <div className="send"> */}
                       {/* <button
                         onSubmit={(e) => onSubmit(e)}
                         className="px-btn px-btn-theme"
@@ -158,7 +160,7 @@ const Contact = () => {
                         {" "}
                         send message
                       </button> */}
-                      <input
+                      {/* <input
                         className="px-btn px-btn-theme"
                         type="submit"
                         value="send message"
@@ -184,8 +186,9 @@ const Contact = () => {
                   </div>
                 </div>
               </form>
-            </div>
-          </div>
+            </div>*/}
+          </div> 
+          
           <div className="col-12">
             <div className="google-map">
               <div className="embed-responsive embed-responsive-21by9">
@@ -196,7 +199,7 @@ const Contact = () => {
                 />
               </div>
             </div>
-          </div>
+          </div> 
         </div>
       </div>
     </section>

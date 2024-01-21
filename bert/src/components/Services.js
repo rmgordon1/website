@@ -90,7 +90,7 @@ const Services = () => {
           </div>
         </div>
         <div className="separated" />
-        <Testimonials />
+        {/* <Testimonials /> */}
       </div>
     </section>
   );

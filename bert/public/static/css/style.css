@@ -1317,6 +1317,11 @@ mark {
     text-align: center;
   }
 }
+.badge-icons{
+  padding: 10px;
+  min-width: 100px;
+  max-width: 150px;
+}
 .about-me .info {
   text-align: center;
   padding-top: 40px;

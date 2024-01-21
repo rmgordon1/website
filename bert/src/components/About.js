@@ -1,3 +1,7 @@
+import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+
 const About = () => {
   //const contactRef = useRef(null);
   //const scrollToContact = () => contactRef.current.scrollIntoView();
@@ -15,7 +19,7 @@ const About = () => {
               <div className="img">
                 <div className="img-in">
                   <img 
-                    src="static/img/portrait.jpg" title="" alt="" 
+                    src="static/img/bert/portrait.jpg" title="" alt="" 
                     // onMouseOver={e => (e.currentTarget.src = "static/img/quag.png")}
                     // onMouseOut={e => (e.currentTarget.src = "static/img/portrait.jpg")}
                   />
@@ -75,14 +79,14 @@ const About = () => {
           <div className="col-lg-4 m-15px-tb">
             <ul className="aducation-box">
               <li>
-                <span>2020</span>
-                <h6>Full-Stack Developer</h6>
-                <p>Alanda Software</p>
+                <span>2017-2021</span>
+                <h6>Bachelor of Science in Computer Science</h6>
+                <p>The George Washington University</p>
               </li>
               <li>
-                <span>2021-Present</span>
-                <h6>DevOps Engineer</h6>
-                <p>Verisk ISO</p>
+                <span>2022</span>
+                <h6>AWS Solutions Architect</h6>
+                <p>AWS - Certificate</p>
               </li>
               <li>
                 <span>2018-Present</span>
@@ -94,47 +98,112 @@ const About = () => {
           <div className="col-lg-7 ml-auto m-15px-tb">
             <div className="skills-box">
               <h3>My skills</h3>
+
+                <Container>
+                  <Row>
+                    <Col>
+                    <div className="badge-icons">
+                      <img 
+                        src="static/img/badges/CT.png" 
+                      />
+                    </div>
+                    </Col>
+                    <Col>
+                      <div className="badge-icons">
+                        <img 
+                          src="static/img/badges/docker.png" 
+                        />
+                      </div>
+                    </Col>
+                    <Col>
+                      <div className="badge-icons">
+                        <img 
+                          src="static/img/badges/kubernetes.png" 
+                        />
+                      </div>
+                    </Col>
+                    <Col>
+                      <div className="badge-icons">
+                        <img 
+                          src="static/img/badges/java.png" 
+                        />
+                      </div>
+                    </Col>
+                  </Row>
+                </Container>
+                <Container>
+                  <Row>
+                    <Col>
+                    <div className="badge-icons">
+                      <img 
+                        src="static/img/badges/awsClPr.png" 
+                      />
+                    </div>
+                    </Col>
+                    <Col>
+                      <div className="badge-icons">
+                        <img 
+                          src="static/img/badges/awsSolArc.png" 
+                        />
+                      </div>
+                    </Col>
+                    <Col>
+                      <div className="badge-icons">
+                        <img 
+                          src="static/img/badges/net3.png" 
+                        />
+                      </div>
+                    </Col>
+                    <Col>
+                      <div className="badge-icons">
+                        <img 
+                          src="static/img/badges/atlassian.png" 
+                        />
+                      </div>
+                    </Col>
+                  </Row>
+                </Container>
               {/* <p>
                 {`I'm`} a Freelancer Front-end Developer with over 3 years of
                 experience. I code and create web elements for amazing people
                 around the world. I like work with new people. New people new
                 Experiences.
               </p> */}
-              <div className="skill-lt">
+              {/* <div className="skill-lt">
                 <h6>HTML5</h6>
                 <div className="skill-bar">
                   <div className="skill-bar-in" style={{ width: "92%" }}>
                     <span data-toggle="tooltip" title="92%" />
                   </div>
                 </div>
-              </div>
+              </div> */}
               {/* /skill */}
-              <div className="skill-lt">
+              {/* <div className="skill-lt">
                 <h6>WordPress</h6>
                 <div className="skill-bar">
                   <div className="skill-bar-in" style={{ width: "72%" }}>
                     <span data-toggle="tooltip" title="72%" />
                   </div>
                 </div>
-              </div>
+              </div> */}
               {/* /skill */}
-              <div className="skill-lt">
+              {/* <div className="skill-lt">
                 <h6>Magento</h6>
                 <div className="skill-bar">
                   <div className="skill-bar-in" style={{ width: "86%" }}>
                     <span data-toggle="tooltip" title="86%" />
                   </div>
                 </div>
-              </div>
+              </div> */}
               {/* /skill */}
-              <div className="skill-lt">
+              {/* <div className="skill-lt">
                 <h6>UI/UX</h6>
                 <div className="skill-bar">
                   <div className="skill-bar-in" style={{ width: "88%" }}>
                     <span data-toggle="tooltip" title="88%" />
                   </div>
                 </div>
-              </div>
+              </div> */}
               {/* /skill */}
             </div>
           </div>
