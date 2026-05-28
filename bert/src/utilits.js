@@ -1,13 +1,15 @@
 export const activeSection = () => {
-  const path = window.location.pathname;
   window.addEventListener("scroll", () => {
     const sections = document.querySelectorAll(".pp-section");
     const navLi = document.querySelectorAll(".nav-menu li");
     let current = "";
+    const scrollY = window.pageYOffset;
+    const headerOffset = 80;
     sections.forEach((section) => {
-      const sectionTop = section.offsetTop;
+      const rect = section.getBoundingClientRect();
+      const sectionTop = rect.top + scrollY;
       const sectionHeight = section.clientHeight;
-      if (pageYOffset >= sectionTop - sectionHeight / 3) {
+      if (scrollY + headerOffset >= sectionTop - sectionHeight / 3) {
         current = section.getAttribute("id");
       }
     });

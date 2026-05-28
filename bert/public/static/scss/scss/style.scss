@@ -49,6 +49,19 @@
 		background: $px-white;
 	}
 }
+
+#contactus.pp-section.contact-lobster-bg {
+	background-color: $px-bg-2;
+	background-image: url("/static/img/bert/matrix-code_02.gif");
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+}
+.theme-light #contactus.pp-section.contact-lobster-bg {
+	background-color: $px-gray;
+	background-image: url("/static/img/bert/matrix-code_02.gif");
+}
+
 .section {
 	padding: 100px 0;
 	@include down-sm {
@@ -851,25 +864,5 @@
 	}
 	textarea.form-control {
 		height: auto;
-	}
-}
-
-.google-map {
-	margin-top: 50px;
-	.theme-light & {
-		border: 5px solid $px-white;
-	}
-	@include down-sm {
-		margin-top: 15px;
-	}
-	.embed-responsive-21by9{
-		filter: grayscale(1);
-    	-webkit-filter: grayscale(1);
-		&:before {
-			padding-top: 30%;
-			@include down-sm {
-				padding-top: 55%;
-			}
-		}
 	}
 }

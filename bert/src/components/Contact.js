@@ -1,205 +1,110 @@
-import emailjs from "emailjs-com";
-import { useState } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
+
+const LOBSTER_SRC = "/static/img/bert/lobsterphone.jpg";
+
+/** Same vertical budget as CSS: min-height: clamp(360px, 68vh, 760px) */
+function lobsterStageHeightBudget() {
+  if (typeof window === "undefined") return 560;
+  return Math.min(760, Math.max(360, Math.round(window.innerHeight * 0.68)));
+}
+
 const Contact = () => {
-  const [mailData, setMailData] = useState({
-    name: "",
-    email: "",
-    subject: "",
-    message: "",
-  });
-  const { name, email, message, subject } = mailData;
-  const [error, setError] = useState(null);
-  const onChange = (e) =>
-    setMailData({ ...mailData, [e.target.name]: e.target.value });
-  const onSubmit = (e) => {
-    e.preventDefault();
-    if (
-      name.length === 0 ||
-      email.length === 0 ||
-      message.length === 0 ||
-      subject.length === 0
-    ) {
-      setError(true);
-      clearError();
-    } else {
-      emailjs
-        .send(
-          "service_seruhwu", // service id
-          "template_21aw58z", // template id
-          mailData,
-          "Q3pccdLZhU-mZT7tQ" // public api
-        )
-        .then(
-          (response) => {
-            setError(false);
-            clearError();
-            setMailData({ name: "", email: "", message: "", subject: "" });
-          },
-          (err) => {
-            console.log(err.text);
-          }
-        );
-    }
+  const sectionRef = useRef(null);
+  const imgRef = useRef(null);
+  const [drawn, setDrawn] = useState({ w: 0, h: 0 });
+
+  const measure = useCallback(() => {
+    const section = sectionRef.current;
+    const img = imgRef.current;
+    if (!section || !img?.naturalWidth) return;
+    const W = section.clientWidth;
+    if (W < 1) return;
+    const H = lobsterStageHeightBudget();
+    const iw = img.naturalWidth;
+    const ih = img.naturalHeight;
+    const scale = Math.min(W / iw, H / ih);
+    setDrawn({
+      w: Math.round(iw * scale),
+      h: Math.round(ih * scale),
+    });
+  }, []);
+
+  useLayoutEffect(() => {
+    measure();
+    const section = sectionRef.current;
+    if (!section) return undefined;
+    const ro = new ResizeObserver(() => measure());
+    ro.observe(section);
+    window.addEventListener("resize", measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, [measure]);
+
+  const contactBgStyle = {
+    backgroundImage: "url('/static/img/bert/matrix-code_02.gif')",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
   };
-  const clearError = () => {
-    setTimeout(() => {
-      setError(null);
-    }, 2000);
+
+  const columnStyle = {
+    width: drawn.w > 0 ? drawn.w : "100%",
+    maxWidth: "100%",
   };
+
+  const stageStyle =
+    drawn.h > 0
+      ? {
+          minHeight: drawn.h,
+          height: drawn.h,
+        }
+      : undefined;
+
   return (
     <section
+      ref={sectionRef}
       id="contactus"
       data-nav-tooltip="Contact Me"
-      className="pp-section pp-scrollable section dark-bg"
+      className="pp-section pp-scrollable section contact-lobster-bg"
+      style={contactBgStyle}
     >
-      <div className="container">
-        <div className="title">
-          <h3>Get in touch.</h3>
-        </div>
-        <div className="row">
-          <div className="col-lg-5 col-xl-4 m-15px-tb">
-            <div className="contact-info">
-              <h4>Contact Details:</h4>
-              <p>
-                Always looking for smart people with good ideas. Feel free to contact me for anything!
-              </p>
-              <ul>
-                <li className="media">
-                  <i className="ti-map" />
-                  <span className="media-body">
-                    1257 Sunnyfield Lane, Scotch Plains, 07076, USA.
-                  </span>
-                </li>
-                <li className="media">
-                  <i className="ti-email" />
-                  <span className="media-body">robertmgordon15@gmail.com</span>
-                </li>
-                <li className="media">
-                  <i className="ti-mobile" />
-                  <span className="media-body">+1 908 447 9562</span>
-                </li>
-              </ul>
-            </div>
+      <div className="contact-lobster-column" style={columnStyle}>
+        <div className="contact-lobster-heading-bar">
+          <div className="title contact-lobster-heading">
+            <h3>Get in touch</h3>
           </div>
-          <div className="col-lg-7 col-xl-8 m-15px-tb">
-            
+        </div>
 
+        <div
+          className="contact-lobster-stage"
+          style={stageStyle}
+        >
+          <img
+            ref={imgRef}
+            className="contact-lobster-img"
+            src={LOBSTER_SRC}
+            alt=""
+            onLoad={measure}
+            draggable={false}
+            style={drawn.w > 0 ? { width: drawn.w, height: drawn.h } : undefined}
+          />
+        </div>
 
-            {/* <div className="contact-form">
-              <h4>Say Something</h4>
-              <form id="contact-form" onSubmit={(e) => onSubmit(e)}>
-                <div className="row">
-                  <div className="col-md-6">
-                    <div className="form-group">
-                      <input
-                        name="name"
-                        onChange={(e) => onChange(e)}
-                        value={name}
-                        id="name"
-                        placeholder="Name *"
-                        className={`form-control ${
-                          error ? (!name ? "invalid" : "") : ""
-                        }`}
-                        type="text"
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-6">
-                    <div className="form-group">
-                      <input
-                        name="email"
-                        onChange={(e) => onChange(e)}
-                        value={email}
-                        id="email"
-                        placeholder="Email *"
-                        className={`form-control ${
-                          error ? (!email ? "invalid" : "") : ""
-                        }`}
-                        type="email"
-                      />
-                    </div>
-                  </div>
-                  <div className="col-12">
-                    <div className="form-group">
-                      <input
-                        name="subject"
-                        onChange={(e) => onChange(e)}
-                        value={subject}
-                        id="subject"
-                        placeholder="Subject *"
-                        className={`form-control ${
-                          error ? (!subject ? "invalid" : "") : ""
-                        }`}
-                        type="text"
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-12">
-                    <div className="form-group">
-                      <textarea
-                        name="message"
-                        onChange={(e) => onChange(e)}
-                        value={message}
-                        id="message"
-                        placeholder="Your message *"
-                        rows={5}
-                        className={`form-control ${
-                          error ? (!message ? "invalid" : "") : ""
-                        }`}
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-12">
-                    <div className="send"> */}
-                      {/* <button
-                        onSubmit={(e) => onSubmit(e)}
-                        className="px-btn px-btn-theme"
-                        type="button"
-                        value="Send"
-                      >
-                        {" "}
-                        send message
-                      </button> */}
-                      {/* <input
-                        className="px-btn px-btn-theme"
-                        type="submit"
-                        value="send message"
-                      />
-                    </div>
-                    <span
-                      id="suce_message"
-                      className="text-success"
-                      style={{
-                        display:
-                          error !== null ? (!error ? "block" : "none") : "none",
-                      }}
-                    >
-                      Message Sent Successfully
-                    </span>
-                    <span
-                      id="err_message"
-                      className="text-danger"
-                      style={{ display: "none" }}
-                    >
-                      Message Sending Failed
-                    </span>
-                  </div>
-                </div>
-              </form>
-            </div>*/}
-          </div> 
-          
-          <div className="col-12">
-            <div className="google-map">
-              <div className="embed-responsive embed-responsive-21by9">
-                <iframe
-                  className="embed-responsive-item"
-                  src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d3151.840107317064!2d144.955925!3d-37.817214!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0xb6899234e561db11!2sEnvato!5e0!3m2!1sen!2sin!4v1520156366883"
-                  allowFullScreen=""
-                />
-              </div>
+        <div className="contact-lobster-footer-bar">
+          <address className="contact-lobster-contact-lines">
+            <div className="contact-lobster-row">
+              <i className="ti-email" aria-hidden="true" />
+              <a href="mailto:robertmgordon15@gmail.com">robertmgordon15@gmail.com</a>
+              <i className="ti-email" aria-hidden="true" />
             </div>
-          </div> 
+            <div className="contact-lobster-row">
+              <i className="ti-mobile" aria-hidden="true" />
+              <a href="tel:+19084479562">+1 908 447 9562</a>
+              <i className="ti-mobile" aria-hidden="true" />
+            </div>
+          </address>
         </div>
       </div>
     </section>
