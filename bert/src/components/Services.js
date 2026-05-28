@@ -1,9 +1,3 @@
-import dynamic from "next/dynamic";
-
-const Testimonials = dynamic(() => import("./Testimonials"), {
-  ssr: false,
-});
-
 const Services = () => {
   return (
     <section
@@ -90,7 +84,6 @@ const Services = () => {
           </div>
         </div>
         <div className="separated" />
-        {/* <Testimonials /> */}
       </div>
     </section>
   );
