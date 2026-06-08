@@ -1,11 +1,10 @@
-import { Fragment } from "react";
 import ImageView from "../components/ImageView";
+import { PageProvider } from "../PageContext";
 import BackBtn from "./BackBtn";
-import DayNightMood from "./DayNightMood";
 import Header from "./Header";
 const Layout = ({ children, blog }) => {
   return (
-    <Fragment>
+    <PageProvider>
       <ImageView />
       {/* page loading */}
       {/* End */}
@@ -13,9 +12,8 @@ const Layout = ({ children, blog }) => {
       <Header blog={blog} />
       {/* Main Start */}
       <main className="main-left pp-main-section">{children}</main>
-      <DayNightMood />
       {blog && <BackBtn />}
-    </Fragment>
+    </PageProvider>
   );
 };
 export default Layout;

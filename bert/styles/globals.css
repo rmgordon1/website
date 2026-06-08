@@ -6,7 +6,7 @@
 
 @font-face {
   font-family: "Triangle";
-  src: url("/static/font/Triangle.ttf") format("truetype");
+  src: url("/static/font/monster.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -16,6 +16,13 @@ html {
   scroll-behavior: smooth;
   scroll-padding-top: 80px;
 }
+
+/* Left navigation sidebar color */
+.header-top,
+.theme-light .header-top {
+  background: #ae7212 !important;
+}
+
 /* image popup */
 img.mfp-img {
   box-shadow: 0 0 8px rgb(0 0 0 / 60%);

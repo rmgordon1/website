@@ -1,16 +1,18 @@
 import Link from "next/link";
 import { Fragment, useEffect, useState } from "react";
-import { activeSection } from "../utilits";
+import { usePage } from "../PageContext";
 
 const Header = ({ blog }) => {
   const [sideBarToggle, setSideBarToggle] = useState(false);
   const closeMenu = () => setSideBarToggle(false);
+  const { setActive } = usePage();
 
-  useEffect(() => {
-    if (!blog) {
-      activeSection();
-    }
-  }, [blog]);
+  const goHome = (e) => {
+    if (blog) return;
+    e.preventDefault();
+    setActive("home");
+    closeMenu();
+  };
 
   return (
     <Fragment>
@@ -18,7 +20,7 @@ const Header = ({ blog }) => {
         <div className="header-top-inner">
           <div className="hl-brand">
             <Link href="/">
-              <a className="hl-brand-link" onClick={closeMenu}>
+              <a className="hl-brand-link" onClick={goHome}>
                 <div className="img">
                   <img src="static/img/bert/portrait.jpg" title="" alt="" />
                 </div>
@@ -54,39 +56,41 @@ const Header = ({ blog }) => {
 };
 export default Header;
 
+const NAV_ITEMS = [
+  { id: "home", icon: "ti-home", label: "Home" },
+  { id: "about", icon: "ti-id-badge", label: "About Me" },
+  { id: "services", icon: "ti-panel", label: "Services" },
+  { id: "work", icon: "ti-bookmark-alt", label: "Portfolio" },
+  { id: "contactus", icon: "ti-map-alt", label: "Contact Me" },
+];
+
 const MenuWithOutBlog = ({ onNavigate }) => {
+  const { active, setActive } = usePage();
+
+  const handleClick = (e, id) => {
+    e.preventDefault();
+    setActive(id);
+    if (onNavigate) onNavigate();
+  };
+
   return (
     <ul className="nav nav-menu" id="pp-menu">
-      <li data-menuanchor="home" className="active">
-        <a className="nav-link" href="#home" onClick={onNavigate}>
-          <i className="ti-home" />
-          <span>Home</span>
-        </a>
-      </li>
-      <li data-menuanchor="about">
-        <a className="nav-link" href="#about" onClick={onNavigate}>
-          <i className="ti-id-badge" />
-          <span>About Me</span>
-        </a>
-      </li>
-      <li data-menuanchor="services">
-        <a className="nav-link" href="#services" onClick={onNavigate}>
-          <i className="ti-panel" />
-          <span>Services</span>
-        </a>
-      </li>
-      <li data-menuanchor="work">
-        <a className="nav-link" href="#work" onClick={onNavigate}>
-          <i className="ti-bookmark-alt" />
-          <span>Portfolio</span>
-        </a>
-      </li>
-      <li data-menuanchor="contactus">
-        <a className="nav-link" href="#contactus" onClick={onNavigate}>
-          <i className="ti-map-alt" />
-          <span>Contact Me</span>
-        </a>
-      </li>
+      {NAV_ITEMS.map((item) => (
+        <li
+          key={item.id}
+          data-menuanchor={item.id}
+          className={active === item.id ? "active" : ""}
+        >
+          <a
+            className="nav-link"
+            href={`#${item.id}`}
+            onClick={(e) => handleClick(e, item.id)}
+          >
+            <i className={item.icon} />
+            <span>{item.label}</span>
+          </a>
+        </li>
+      ))}
     </ul>
   );
 };
@@ -103,46 +107,16 @@ const MenuWithBlog = ({ onNavigate }) => {
   return (
     <Fragment>
       <ul className="nav nav-menu" id="pp-menu">
-        <li data-menuanchor="home">
-          <Link href="/#home">
-            <a className="nav-link" onClick={onNavigate}>
-              <i className="ti-home" />
-              <span>Home</span>
-            </a>
-          </Link>
-        </li>
-        <li data-menuanchor="about">
-          <Link href="/#about">
-            <a className="nav-link" onClick={onNavigate}>
-              <i className="ti-id-badge" />
-              <span>About Me</span>
-            </a>
-          </Link>
-        </li>
-        <li data-menuanchor="services">
-          <Link href="/#services">
-            <a className="nav-link" onClick={onNavigate}>
-              <i className="ti-panel" />
-              <span>Services</span>
-            </a>
-          </Link>
-        </li>
-        <li data-menuanchor="work">
-          <Link href="/#work">
-            <a className="nav-link" onClick={onNavigate}>
-              <i className="ti-bookmark-alt" />
-              <span>Portfolio</span>
-            </a>
-          </Link>
-        </li>
-        <li data-menuanchor="contactus">
-          <Link href="/#contactus">
-            <a className="nav-link" onClick={onNavigate}>
-              <i className="ti-map-alt" />
-              <span>Contact Me</span>
-            </a>
-          </Link>
-        </li>
+        {NAV_ITEMS.map((item) => (
+          <li key={item.id} data-menuanchor={item.id}>
+            <Link href={`/#${item.id}`}>
+              <a className="nav-link" onClick={onNavigate}>
+                <i className={item.icon} />
+                <span>{item.label}</span>
+              </a>
+            </Link>
+          </li>
+        ))}
       </ul>
     </Fragment>
   );

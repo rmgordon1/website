@@ -1,6 +1,6 @@
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 
-const LOBSTER_SRC = "/static/img/bert/lobsterphone.jpg";
+const LOBSTER_SRC = "/static/img/lobsterphone.jpg";
 
 /** Same vertical budget as CSS: min-height: clamp(360px, 68vh, 760px) */
 function lobsterStageHeightBudget() {
@@ -43,7 +43,7 @@ const Contact = () => {
   }, [measure]);
 
   const contactBgStyle = {
-    backgroundImage: "url('/static/img/bert/matrix-code_02.gif')",
+    backgroundImage: "url('/static/img/matrix-code_02.gif')",
     backgroundSize: "cover",
     backgroundPosition: "center",
     backgroundRepeat: "no-repeat",
