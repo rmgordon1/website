@@ -1,5 +1,5 @@
 import dynamic from "next/dynamic";
-import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef } from "react";
 import About from "../src/components/About";
 import Contact from "../src/components/Contact";
 import Services from "../src/components/Services";
@@ -12,82 +12,40 @@ const Portfolio = dynamic(() => import("../src/components/Portfolio"), {
 });
 
 const LOOP_RESTART_TIME = 9.06;
-// landing_page video is 1920x1080 (16:9)
-const VIDEO_ASPECT = 1080 / 1920;
-// Auto-scroll speed once the intro video has played through (pixels per second)
-const SCROLL_SPEED = 28;
 
 const Home = () => {
-  const sectionRef = useRef(null);
-  const trackRef = useRef(null);
-  const tileHeightRef = useRef(0);
-  const offsetRef = useRef(0);
-  const rafRef = useRef(null);
-  const lastTsRef = useRef(0);
-  const [aspect, setAspect] = useState(VIDEO_ASPECT);
-  const [tileCount, setTileCount] = useState(2);
-  const [scrolling, setScrolling] = useState(false);
-
-  const computeTiles = useCallback(() => {
-    const section = sectionRef.current;
-    if (!section || !aspect) return;
-    const width = section.clientWidth;
-    const tileHeight = width * aspect;
-    if (tileHeight < 1) return;
-    tileHeightRef.current = tileHeight;
-    // +2 so the column always covers the viewport plus one tile for seamless looping
-    const needed = Math.ceil(section.clientHeight / tileHeight) + 2;
-    setTileCount(Math.max(2, needed));
-  }, [aspect]);
-
-  useEffect(() => {
-    computeTiles();
-    window.addEventListener("resize", computeTiles);
-    return () => window.removeEventListener("resize", computeTiles);
-  }, [computeTiles]);
-
-  useEffect(() => {
-    if (!scrolling) return undefined;
-    const step = (ts) => {
-      if (!lastTsRef.current) lastTsRef.current = ts;
-      const dt = (ts - lastTsRef.current) / 1000;
-      lastTsRef.current = ts;
-      const tileHeight = tileHeightRef.current || 1;
-      offsetRef.current += SCROLL_SPEED * dt;
-      // Wrap at one tile height so the repeated tiles loop seamlessly
-      if (offsetRef.current >= tileHeight) {
-        offsetRef.current -= tileHeight;
-      }
-      if (trackRef.current) {
-        trackRef.current.style.transform = `translateY(${-offsetRef.current}px)`;
-      }
-      rafRef.current = requestAnimationFrame(step);
-    };
-    rafRef.current = requestAnimationFrame(step);
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      lastTsRef.current = 0;
-    };
-  }, [scrolling]);
-
-  const handleLoadedMetadata = (event) => {
-    const video = event.currentTarget;
-    if (video.videoWidth) {
-      setAspect(video.videoHeight / video.videoWidth);
-    }
-  };
+  const landingVideoRef = useRef(null);
 
   const handleEnded = (event) => {
     const video = event.currentTarget;
     video.currentTime = LOOP_RESTART_TIME;
     video.play();
-    // Begin the slow downward scroll once the intro has played through
-    setScrolling(true);
   };
+
+  useEffect(() => {
+    const video = landingVideoRef.current;
+    if (!video) return;
+
+    const start = () => {
+      video.play();
+      ["click", "keydown", "touchstart", "pointerdown"].forEach((evt) =>
+        window.removeEventListener(evt, start)
+      );
+    };
+
+    ["click", "keydown", "touchstart", "pointerdown"].forEach((evt) =>
+      window.addEventListener(evt, start, { once: true })
+    );
+
+    return () => {
+      ["click", "keydown", "touchstart", "pointerdown"].forEach((evt) =>
+        window.removeEventListener(evt, start)
+      );
+    };
+  }, []);
 
   return (
     <section
-      ref={sectionRef}
       id="home"
       data-nav-tooltip="Home"
       className="pp-section pp-scrollable"
@@ -99,35 +57,61 @@ const Home = () => {
         background: "#000",
       }}
     >
-      <div
-        ref={trackRef}
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
         style={{
-          display: "flex",
-          flexDirection: "column",
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
           width: "100%",
-          willChange: "transform",
+          height: "100%",
+          objectFit: "cover",
+          zIndex: 0,
         }}
       >
-        {Array.from({ length: tileCount }).map((_, index) => (
-          <video
-            key={index}
-            autoPlay
-            muted
-            playsInline
-            onLoadedMetadata={index === 0 ? handleLoadedMetadata : undefined}
-            onEnded={handleEnded}
-            style={{
-              width: "100%",
-              height: "auto",
-              display: "block",
-              flexShrink: 0,
-            }}
-          >
-            <source src="/static/video/landing_page.webm" type="video/webm" />
-            <source src="/static/video/landing_page.mp4" type="video/mp4" />
-          </video>
-        ))}
-      </div>
+        <source src="/static/video/static_box.webm" type="video/webm" />
+      </video>
+      <video
+        ref={landingVideoRef}
+        muted
+        playsInline
+        onEnded={handleEnded}
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: "82%",
+          height: "82%",
+          objectFit: "contain",
+          zIndex: 1,
+        }}
+      >
+        <source src="/static/video/skull_final.webm" type="video/webm" />
+      </video>
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: "100%",
+          height: "100%",
+          objectFit: "contain",
+          zIndex: 10,
+          pointerEvents: "none",
+        }}
+      >
+        <source src="/static/video/videodrome_tv_transp_unc.webm" type="video/webm" />
+      </video>
     </section>
   );
 };

@@ -23,6 +23,12 @@ html {
   background: #ae7212 !important;
 }
 
+/* Override sidebar offset when nav is hidden */
+.main-left {
+  left: 0 !important;
+  width: 100% !important;
+}
+
 /* image popup */
 img.mfp-img {
   box-shadow: 0 0 8px rgb(0 0 0 / 60%);

@@ -7,8 +7,11 @@
 /coverage
 
 # next.js
-/.next/
+.next/
 /out/
+
+node_modules/
+
 
 # production
 /build
@@ -31,3 +34,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+#asset editing
+asset_editing/
+../asset_editing/
