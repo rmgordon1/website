@@ -38,3 +38,5 @@ next-env.d.ts
 #asset editing
 asset_editing/
 ../asset_editing/
+
+media_mapping.txt
