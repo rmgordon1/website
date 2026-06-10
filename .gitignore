@@ -42,3 +42,5 @@ asset_editing/
 media_mapping.txt
 
 bertswebsite.pem
+
+# /public/static/video/*
