@@ -74,6 +74,7 @@ const Home = () => {
         }}
       >
         <source src="https://dx09qkoz6th2f.cloudfront.net/static_box.webm" type="video/webm" />
+        <source src="https://dx09qkoz6th2f.cloudfront.net/static_box.mp4" type="video/mp4" />
       </video>
       <video
         ref={landingVideoRef}
@@ -92,6 +93,7 @@ const Home = () => {
         }}
       >
         <source src="https://dx09qkoz6th2f.cloudfront.net/skull_final.webm" type="video/webm" />
+        <source src="https://dx09qkoz6th2f.cloudfront.net/skull_final.mp4" type="video/mp4" />
       </video>
       <video
         autoPlay
@@ -111,6 +113,7 @@ const Home = () => {
         }}
       >
         <source src="https://dx09qkoz6th2f.cloudfront.net/videodrome_tv_transp_unc.webm" type="video/webm" />
+        <source src="https://dx09qkoz6th2f.cloudfront.net/videodrome_tv_transp_unc.mp4" type="video/mp4" />
       </video>
     </section>
   );
