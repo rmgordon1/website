@@ -73,7 +73,7 @@ const Home = () => {
           zIndex: 0,
         }}
       >
-        <source src="/static/video/static_box.webm" type="video/webm" />
+        <source src="https://dx09qkoz6th2f.cloudfront.net/static_box.webm" type="video/webm" />
       </video>
       <video
         ref={landingVideoRef}
@@ -91,7 +91,7 @@ const Home = () => {
           zIndex: 1,
         }}
       >
-        <source src="/static/video/skull_final.webm" type="video/webm" />
+        <source src="https://dx09qkoz6th2f.cloudfront.net/skull_final.webm" type="video/webm" />
       </video>
       <video
         autoPlay
@@ -110,7 +110,7 @@ const Home = () => {
           pointerEvents: "none",
         }}
       >
-        <source src="/static/video/videodrome_tv_transp_unc.webm" type="video/webm" />
+        <source src="https://dx09qkoz6th2f.cloudfront.net/videodrome_tv_transp_unc.webm" type="video/webm" />
       </video>
     </section>
   );
