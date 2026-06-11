@@ -154,7 +154,6 @@ const Home = () => {
           pointerEvents: "none",
         }}
       >
-        <source src={`${CDN}/${tvName}.webm`} type="video/webm" />
         <source src={`${CDN}/${tvName}.mov`} type="video/mp4" codecs="hvc1" />
       </video>
     </section>
