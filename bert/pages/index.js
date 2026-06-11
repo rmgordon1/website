@@ -30,9 +30,31 @@ const useIsTall = () => {
   return isTall;
 };
 
+// Safari/WebKit is the only engine that renders the HEVC alpha channel in the
+// .mov files. Chromium-based browsers will happily decode the HEVC stream but
+// drop the alpha (showing an opaque video), so they must be served the
+// VP9-alpha .webm instead. All browsers on iOS are WebKit under the hood, so
+// they also need the .mov.
+const usePrefersMovAlpha = () => {
+  const [prefersMov, setPrefersMov] = useState(false);
+
+  useEffect(() => {
+    const ua = navigator.userAgent || "";
+    const isIOS =
+      /iP(ad|hone|od)/.test(ua) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    const isSafari =
+      /^((?!chrome|chromium|crios|fxios|edg|android).)*safari/i.test(ua);
+    setPrefersMov(isIOS || isSafari);
+  }, []);
+
+  return prefersMov;
+};
+
 const Home = () => {
   const landingVideoRef = useRef(null);
   const isTall = useIsTall();
+  const prefersMov = usePrefersMovAlpha();
 
   const skullName = isTall ? "skull_vertical" : "skull_final";
   const tvName = isTall
@@ -115,10 +137,10 @@ const Home = () => {
         }}
       >
         <source src={`${CDN}/static_box.webm`} type="video/webm" />
-        <source src={`${CDN}/static_box.mp4`} type="video/mp4" />
+        <source src={`${CDN}/static_box.mov`} type="video/mp4" codecs="hvc1" />
       </video>
       <video
-        key={skullName}
+        key={`${skullName}-${prefersMov}`}
         ref={landingVideoRef}
         muted
         playsInline
@@ -133,12 +155,14 @@ const Home = () => {
           zIndex: 1,
         }}
       >
-        <source src={`${CDN}/${skullName}.webm`} type="video/webm" />
-        <source src={`${CDN}/${skullName}.mov`} type="video/quicktime" />
-        <source src={`${CDN}/${skullName}.mp4`} type="video/mp4" />
+        {prefersMov ? (
+          <source src={`${CDN}/${skullName}.mp4`} type="video/mp4" codecs="hvc1" />
+        ) : (
+          <source src={`${CDN}/${skullName}.webm`} type="video/webm" />
+        )}
       </video>
       <video
-        key={tvName}
+        key={`${tvName}-${prefersMov}`}
         autoPlay
         muted
         loop
@@ -154,7 +178,11 @@ const Home = () => {
           pointerEvents: "none",
         }}
       >
-        <source src={`${CDN}/${tvName}.mov`} type="video/mp4" codecs="hvc1" />
+        {prefersMov ? (
+          <source src={`${CDN}/${tvName}.mp4`} type="video/mp4" codecs="hvc1" />
+        ) : (
+          <source src={`${CDN}/${tvName}.webm`} type="video/webm" />
+        )}
       </video>
     </section>
   );
