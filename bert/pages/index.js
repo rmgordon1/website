@@ -1,5 +1,5 @@
 import dynamic from "next/dynamic";
-import { Fragment, useEffect, useRef } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import About from "../src/components/About";
 import Contact from "../src/components/Contact";
 import Services from "../src/components/Services";
@@ -13,8 +13,31 @@ const Portfolio = dynamic(() => import("../src/components/Portfolio"), {
 
 const LOOP_RESTART_TIME = 9.06;
 
+const CDN = "https://dx09qkoz6th2f.cloudfront.net";
+
+const useIsTall = () => {
+  const [isTall, setIsTall] = useState(false);
+
+  useEffect(() => {
+    // Matches when the viewport is taller than it is wide (width < height).
+    const mql = window.matchMedia("(max-aspect-ratio: 1/1)");
+    const update = () => setIsTall(mql.matches);
+    update();
+    mql.addEventListener("change", update);
+    return () => mql.removeEventListener("change", update);
+  }, []);
+
+  return isTall;
+};
+
 const Home = () => {
   const landingVideoRef = useRef(null);
+  const isTall = useIsTall();
+
+  const skullName = isTall ? "skull_vertical" : "skull_final";
+  const tvName = isTall
+    ? "videodrome_tv_vertical"
+    : "videodrome_tv_transp_unc";
 
   const handleEnded = (event) => {
     const video = event.currentTarget;
@@ -25,6 +48,13 @@ const Home = () => {
   useEffect(() => {
     const video = landingVideoRef.current;
     if (!video) return;
+
+    // Try to play immediately (muted, so autoplay is permitted). This also
+    // resumes playback after the element remounts on an orientation change.
+    const playPromise = video.play();
+    if (playPromise && typeof playPromise.catch === "function") {
+      playPromise.catch(() => {});
+    }
 
     const start = () => {
       video.play();
@@ -42,7 +72,7 @@ const Home = () => {
         window.removeEventListener(evt, start)
       );
     };
-  }, []);
+  }, [skullName]);
 
   return (
     <section
@@ -73,10 +103,11 @@ const Home = () => {
           zIndex: 0,
         }}
       >
-        <source src="https://dx09qkoz6th2f.cloudfront.net/static_box.webm" type="video/webm" />
-        <source src="https://dx09qkoz6th2f.cloudfront.net/static_box.mp4" type="video/mp4" />
+        <source src={`${CDN}/static_box.webm`} type="video/webm" />
+        <source src={`${CDN}/static_box.mp4`} type="video/mp4" />
       </video>
       <video
+        key={skullName}
         ref={landingVideoRef}
         muted
         playsInline
@@ -92,10 +123,11 @@ const Home = () => {
           zIndex: 1,
         }}
       >
-        <source src="https://dx09qkoz6th2f.cloudfront.net/skull_final.webm" type="video/webm" />
-        <source src="https://dx09qkoz6th2f.cloudfront.net/skull_final.mp4" type="video/mp4" />
+        <source src={`${CDN}/${skullName}.webm`} type="video/webm" />
+        <source src={`${CDN}/${skullName}.mp4`} type="video/mp4" />
       </video>
       <video
+        key={tvName}
         autoPlay
         muted
         loop
@@ -112,8 +144,8 @@ const Home = () => {
           pointerEvents: "none",
         }}
       >
-        <source src="https://dx09qkoz6th2f.cloudfront.net/videodrome_tv_transp_unc.webm" type="video/webm" />
-        <source src="https://dx09qkoz6th2f.cloudfront.net/videodrome_tv_transp_unc.mp4" type="video/mp4" />
+        <source src={`${CDN}/${tvName}.webm`} type="video/webm" />
+        <source src={`${CDN}/${tvName}.mp4`} type="video/mp4" />
       </video>
     </section>
   );
