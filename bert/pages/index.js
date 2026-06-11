@@ -39,6 +39,17 @@ const Home = () => {
     ? "videodrome_tv_vertical"
     : "videodrome_tv_transp_unc";
 
+  // In tall mode we want the vertical videos to be height-bound so their top
+  // and bottom edges touch the window edges (width follows the intrinsic
+  // aspect ratio). In wide mode each video keeps its original box size. The
+  // skull stays at 82% so it remains nested within the full-size TV frame.
+  const skullSize = isTall
+    ? { width: "auto", height: "70%" }
+    : { width: "82%", height: "82%" };
+  const tvSize = isTall
+    ? { width: "auto", height: "100%" }
+    : { width: "100%", height: "100%" };
+
   const handleEnded = (event) => {
     const video = event.currentTarget;
     video.currentTime = LOOP_RESTART_TIME;
@@ -117,8 +128,7 @@ const Home = () => {
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          width: "82%",
-          height: "82%",
+          ...skullSize,
           objectFit: "contain",
           zIndex: 1,
         }}
@@ -137,8 +147,7 @@ const Home = () => {
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          width: "100%",
-          height: "100%",
+          ...tvSize,
           objectFit: "contain",
           zIndex: 10,
           pointerEvents: "none",
