@@ -155,7 +155,7 @@ const Home = () => {
         }}
       >
         <source src={`${CDN}/${tvName}.webm`} type="video/webm" />
-        <source src={`${CDN}/${tvName}.mov`} type="video/quicktime" />
+        <source src={`${CDN}/${tvName}.mov`} type="video/mp4" codecs="hvc1" />
       </video>
     </section>
   );
