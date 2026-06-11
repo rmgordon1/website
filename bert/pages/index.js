@@ -134,6 +134,7 @@ const Home = () => {
         }}
       >
         <source src={`${CDN}/${skullName}.webm`} type="video/webm" />
+        <source src={`${CDN}/${skullName}.mov`} type="video/quicktime" />
         <source src={`${CDN}/${skullName}.mp4`} type="video/mp4" />
       </video>
       <video
@@ -154,7 +155,7 @@ const Home = () => {
         }}
       >
         <source src={`${CDN}/${tvName}.webm`} type="video/webm" />
-        <source src={`${CDN}/${tvName}.mov`} type="video/mov" />
+        <source src={`${CDN}/${tvName}.mov`} type="video/quicktime" />
       </video>
     </section>
   );
