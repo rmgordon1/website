@@ -136,8 +136,8 @@ const Home = () => {
           zIndex: 0,
         }}
       >
-        <source src={`${CDN}/static_box.webm`} type="video/webm" />
-        <source src={`${CDN}/static_box.mov`} type="video/mp4" codecs="hvc1" />
+        <source src={`${CDN}/static_final.mp4`} type="video/mp4"/>
+        <source src={`${CDN}/static_final.webm`} type="video/webm"/>
       </video>
       <video
         key={`${skullName}-${prefersMov}`}
