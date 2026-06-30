@@ -43,4 +43,6 @@ media_mapping.txt
 
 bertswebsite.pem
 
+bert/workflow.sh
+
 # /public/static/video/*
