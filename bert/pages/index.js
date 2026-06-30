@@ -5,6 +5,7 @@ import Contact from "../src/components/Contact";
 import Services from "../src/components/Services";
 import { usePage } from "../src/PageContext";
 import Layout from "../src/layout/Layout";
+import { CDN, usePrefersMovAlpha } from "../src/video";
 
 
 const Portfolio = dynamic(() => import("../src/components/Portfolio"), {
@@ -12,8 +13,6 @@ const Portfolio = dynamic(() => import("../src/components/Portfolio"), {
 });
 
 const LOOP_RESTART_TIME = 9.06;
-
-const CDN = "https://dx09qkoz6th2f.cloudfront.net";
 
 const useIsTall = () => {
   const [isTall, setIsTall] = useState(false);
@@ -28,27 +27,6 @@ const useIsTall = () => {
   }, []);
 
   return isTall;
-};
-
-// Safari/WebKit is the only engine that renders the HEVC alpha channel in the
-// .mov files. Chromium-based browsers will happily decode the HEVC stream but
-// drop the alpha (showing an opaque video), so they must be served the
-// VP9-alpha .webm instead. All browsers on iOS are WebKit under the hood, so
-// they also need the .mov.
-const usePrefersMovAlpha = () => {
-  const [prefersMov, setPrefersMov] = useState(false);
-
-  useEffect(() => {
-    const ua = navigator.userAgent || "";
-    const isIOS =
-      /iP(ad|hone|od)/.test(ua) ||
-      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-    const isSafari =
-      /^((?!chrome|chromium|crios|fxios|edg|android).)*safari/i.test(ua);
-    setPrefersMov(isIOS || isSafari);
-  }, []);
-
-  return prefersMov;
 };
 
 const Home = () => {
@@ -136,8 +114,8 @@ const Home = () => {
           zIndex: 0,
         }}
       >
-        <source src={`${CDN}/static_final.mp4`} type="video/mp4"/>
-        <source src={`${CDN}/static_final.webm`} type="video/webm"/>
+        <source src={`${CDN}/landing_page/static_final.mp4`} type="video/mp4"/>
+        <source src={`${CDN}/landing_page/static_final.webm`} type="video/webm"/>
       </video>
       <video
         key={`${skullName}-${prefersMov}`}
@@ -156,9 +134,9 @@ const Home = () => {
         }}
       >
         {prefersMov ? (
-          <source src={`${CDN}/${skullName}.mp4`} type="video/mp4" codecs="hvc1" />
+          <source src={`${CDN}/landing_page/${skullName}.mp4`} type="video/mp4" codecs="hvc1" />
         ) : (
-          <source src={`${CDN}/${skullName}.webm`} type="video/webm" />
+          <source src={`${CDN}/landing_page/${skullName}.webm`} type="video/webm" />
         )}
       </video>
       <video
@@ -179,9 +157,9 @@ const Home = () => {
         }}
       >
         {prefersMov ? (
-          <source src={`${CDN}/${tvName}.mp4`} type="video/mp4" codecs="hvc1" />
+          <source src={`${CDN}/landing_page/${tvName}.mp4`} type="video/mp4" codecs="hvc1" />
         ) : (
-          <source src={`${CDN}/${tvName}.webm`} type="video/webm" />
+          <source src={`${CDN}/landing_page/${tvName}.webm`} type="video/webm" />
         )}
       </video>
     </section>

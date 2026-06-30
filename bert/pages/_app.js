@@ -6,9 +6,37 @@ import "../styles/globals.css";
 function MyApp({ Component, pageProps }) {
   const [load, setLoad] = useState(true);
   useEffect(() => {
-    setTimeout(() => {
-      setLoad(false);
-    }, 1000);
+    let minTimePassed = false;
+    let contentLoaded = false;
+
+    const maybeHide = () => {
+      if (minTimePassed && contentLoaded) {
+        setLoad(false);
+      }
+    };
+
+    // Stay visible for at least 5 seconds.
+    const timer = setTimeout(() => {
+      minTimePassed = true;
+      maybeHide();
+    }, 5000);
+
+    // Keep showing until all page assets (images, fonts, etc.) finish loading.
+    const handleLoad = () => {
+      contentLoaded = true;
+      maybeHide();
+    };
+
+    if (document.readyState === "complete") {
+      handleLoad();
+    } else {
+      window.addEventListener("load", handleLoad);
+    }
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("load", handleLoad);
+    };
   }, []);
 
   return (
