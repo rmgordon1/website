@@ -85,7 +85,7 @@ function MyApp({ Component, pageProps }) {
         />
       </Head>
       {load && <PreLoader />}
-      <Component {...pageProps} />
+      <Component {...pageProps} isPreloading={load} />
     </Fragment>
   );
 }

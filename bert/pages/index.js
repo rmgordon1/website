@@ -29,7 +29,7 @@ const useIsTall = () => {
   return isTall;
 };
 
-const Home = () => {
+const Home = ({ isPreloading }) => {
   const landingVideoRef = useRef(null);
   const isTall = useIsTall();
   const prefersMov = usePrefersMovAlpha();
@@ -60,6 +60,12 @@ const Home = () => {
     const video = landingVideoRef.current;
     if (!video) return;
 
+    // Don't start the landing animation while the full-screen preloader is
+    // still covering the page. Otherwise the intro plays (and can finish)
+    // behind the loading screen, so the user never sees it. Once the
+    // preloader is gone this effect re-runs and playback begins from the top.
+    if (isPreloading) return;
+
     // Try to play immediately (muted, so autoplay is permitted). This also
     // resumes playback after the element remounts on an orientation change.
     const playPromise = video.play();
@@ -83,7 +89,7 @@ const Home = () => {
         window.removeEventListener(evt, start)
       );
     };
-  }, [skullName]);
+  }, [skullName, isPreloading]);
 
   return (
     <section
@@ -166,11 +172,11 @@ const Home = () => {
   );
 };
 
-const PageContent = () => {
+const PageContent = ({ isPreloading }) => {
   const { active } = usePage();
   return (
     <Fragment>
-      {active === "home" && <Home />}
+      {active === "home" && <Home isPreloading={isPreloading} />}
       {active === "about" && <About />}
       {active === "services" && <Services />}
       {active === "work" && <Portfolio />}
@@ -179,10 +185,10 @@ const PageContent = () => {
   );
 };
 
-const Index = () => {
+const Index = ({ isPreloading }) => {
   return (
     <Layout>
-      <PageContent />
+      <PageContent isPreloading={isPreloading} />
     </Layout>
   );
 };
