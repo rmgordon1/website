@@ -47,7 +47,13 @@ const { webmSrc, hevcSrc, alt = '', class: className = '' } = Astro.props;
 </script>
 
 <style>
-  transparent-video,
+  /* The custom element itself generates no box, so the inner <video> is laid
+   * out as if it were a direct child of the parent — the `class` passed in
+   * (e.g. `bg-media`) fully controls sizing/positioning. */
+  transparent-video {
+    display: contents;
+  }
+
   transparent-video video {
     display: block;
     width: 100%;

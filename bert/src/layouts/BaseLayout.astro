@@ -23,7 +23,19 @@ const { title = site.title, description = site.description } = Astro.props;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    {/* Favicons — browser picks the best match per context */}
+    {/* Default / legacy request (also served at /favicon.ico) */}
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    {/* Modern browser tabs: crisp 16/32px PNGs */}
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
+    {/* iOS home-screen bookmark */}
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
+    {/* Android / PWA install (192 & 512 via manifest) */}
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#000000" />
+
     <title>{title}</title>
     <slot name="head" />
   </head>

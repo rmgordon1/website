@@ -2,28 +2,70 @@
 /**
  * Home — /home
  *
- * Full-screen looping video background (the current sub_final.002.webm).
- * Navigation is rendered as glowing video buttons per the spec; the sample
- * below reuses the same background clip for both layers as a placeholder —
- * swap `glowSrc` for a real "glow" render and add more buttons as needed.
+ * Layered, media-driven landing page. Stacking, front → back:
+ *   1. hover hotspots (invisible, catch pointer over each screen)
+ *   2. cockpit transparent video (.bg-media)
+ *   3. planet background image (.bg-media--back)
+ *   4. screen videos (.screen-video) — hidden behind everything at rest,
+ *      brought to the front while their hotspot is hovered.
+ *
+ * The two "reverse" screen videos share the cockpit's 1920×1080 canvas, so
+ * rendered full-screen with object-fit:cover their visible squares land
+ * exactly on the left ("Portfolio") and right ("Pokémon Showdown") screens.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
+import TransparentVideo from '../components/TransparentVideo.astro';
 import { mediaUrl } from '../config/site';
 
-const bgVideo = mediaUrl('/static/video/sub_final.002.webm');
+// Back layer: full-screen background video.
+const bgBackVideo = mediaUrl('/static/video/temp_water.webm');
+// Front layer: transparent video — its alpha regions reveal the image behind.
+const bgWebm = mediaUrl('/static/video/sub_final.002.webm');
+// HEVC (.mp4/alpha) for Safari/iOS — PLACEHOLDER: file doesn't exist yet.
+// Generate via the `hevc_videotoolbox` command in media_mapping.txt (Mac).
+const bgHevc = mediaUrl('/static/video/sub_final.002.mp4');
+
+// Deepest layer: hover-reveal screen videos (transparent square + rest clear).
+const portfolioWebm = mediaUrl('/static/video/final_portfolio_reverse.webm');
+const showdownWebm = mediaUrl('/static/video/final_showdown_reverse.webm');
 ---
 
 <BaseLayout title="Bert">
-  <!-- Full-screen background video (§3 Media-Driven UI) -->
+  {/* Hotspots come first in the DOM so the CSS `~` sibling selector can link
+      each hovered hotspot to its screen video. Paint order is controlled by
+      z-index, not DOM order, so these still render on top. */}
+  <div class="screen-hotspot screen-hotspot--portfolio" aria-hidden="true"></div>
+  <div class="screen-hotspot screen-hotspot--showdown" aria-hidden="true"></div>
+
+  {/* Deepest layer: screen videos, hidden behind everything until hovered */}
   <video
-    class="bg-media"
-    autoplay
-    loop
-    muted
-    playsinline
-    preload="auto"
-    src={bgVideo}
+    class="screen-video screen-video--portfolio"
+    autoplay loop muted playsinline preload="auto"
+    src={portfolioWebm}
+    aria-hidden="true"
   ></video>
+  <video
+    class="screen-video screen-video--showdown"
+    autoplay loop muted playsinline preload="auto"
+    src={showdownWebm}
+    aria-hidden="true"
+  ></video>
+
+  {/* Back layer: full-screen background video (§3 Media-Driven UI) */}
+  <video
+    class="bg-media bg-media--back"
+    autoplay loop muted playsinline preload="auto"
+    src={bgBackVideo}
+    aria-label="Water background"
+  ></video>
+
+  {/* Front layer: transparent video (§4.1); alpha reveals the image behind */}
+  <TransparentVideo
+    class="bg-media"
+    webmSrc={bgWebm}
+    hevcSrc={bgHevc}
+    alt="Sci-fi cockpit control panel"
+  />
 
   <main class="home">
     <nav class="home__nav" aria-label="Primary">
@@ -33,6 +75,66 @@ const bgVideo = mediaUrl('/static/video/sub_final.002.webm');
 </BaseLayout>
 
 <style>
+  /* ---- Hover-reveal screen videos ------------------------------------- *
+   * Full-screen + object-fit:cover so each clip's visible square lands on
+   * the matching cockpit screen. Hidden behind everything (z-index:-3,
+   * opacity:0) at rest; a hovered hotspot brings the matching one forward. */
+  .screen-video {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    object-fit: cover;
+    object-position: center;
+    z-index: -3;
+    opacity: 0;
+    pointer-events: none; /* hover is driven by the hotspots, not the video */
+    /* Fade opacity; delay dropping z-index on leave so the fade-out stays
+       visible in front before the clip returns behind everything. */
+    transition:
+      opacity 0.28s ease,
+      z-index 0s linear 0.28s;
+  }
+
+  .screen-hotspot--portfolio:hover ~ .screen-video--portfolio,
+  .screen-hotspot--showdown:hover ~ .screen-video--showdown {
+    opacity: 1;
+    z-index: 20; /* above the cockpit video + image, below the hotspots */
+    transition:
+      opacity 0.28s ease,
+      z-index 0s; /* jump to front immediately on hover */
+  }
+
+  /* ---- Hover hotspots over each cockpit screen ------------------------ *
+   * Invisible pointer targets sized to the visible square. Positions are in
+   * % of the viewport, tuned for a ~16:9 display; adjust the custom props if
+   * your screen crops differently. */
+  .screen-hotspot {
+    position: fixed;
+    z-index: 30; /* on top, so it always catches the hover */
+    left: var(--x);
+    top: var(--y);
+    width: var(--w);
+    height: var(--h);
+    /* background: rgba(255, 0, 255, 0.3); */ /* uncomment to visualize */
+  }
+
+  .screen-hotspot--portfolio {
+    --x: 24.5%;
+    --y: 21%;
+    --w: 12.5%;
+    --h: 19%;
+  }
+
+  .screen-hotspot--showdown {
+    --x: 63%;
+    --y: 21%;
+    --w: 12.5%;
+    --h: 19%;
+  }
+
+  /* ---- Foreground content --------------------------------------------- */
   .home {
     position: relative;
     display: flex;
