@@ -1,0 +1,132 @@
+---
+/**
+ * ArtViewer (§4.3 — High-Res Art Viewer, pan/zoom)
+ *
+ * Islands architecture: the surrounding page stays static HTML. This is a
+ * self-contained custom element that provides full-screen pan/zoom for a
+ * high-resolution image. The client script below is only shipped on pages
+ * that render this component.
+ *
+ * For gigapixel/tiled deep-zoom, swap the internals for OpenSeadragon; for a
+ * gallery lightbox, use PhotoSwipe. Load those libraries with a dynamic
+ * import inside connectedCallback so they stay off every other page.
+ *
+ * Props:
+ *   src   - high-resolution image URL
+ *   alt   - accessible description
+ */
+interface Props {
+  src: string;
+  alt?: string;
+}
+
+const { src, alt = '' } = Astro.props;
+---
+
+<art-viewer data-src={src} data-alt={alt} class="art-viewer">
+  <img class="art-viewer__img" src={src} alt={alt} draggable="false" />
+  <div class="art-viewer__hint">Scroll / pinch to zoom · drag to pan · double-click to reset</div>
+</art-viewer>
+
+<script>
+  class ArtViewer extends HTMLElement {
+    scale = 1;
+    x = 0;
+    y = 0;
+    dragging = false;
+    startX = 0;
+    startY = 0;
+
+    connectedCallback() {
+      const img = this.querySelector<HTMLImageElement>('.art-viewer__img');
+      if (!img) return;
+
+      const apply = () => {
+        img.style.transform = `translate(${this.x}px, ${this.y}px) scale(${this.scale})`;
+      };
+
+      this.addEventListener('wheel', (e: WheelEvent) => {
+        e.preventDefault();
+        const delta = -e.deltaY * 0.0015;
+        this.scale = Math.min(8, Math.max(1, this.scale + delta));
+        if (this.scale === 1) {
+          this.x = 0;
+          this.y = 0;
+        }
+        apply();
+      }, { passive: false });
+
+      this.addEventListener('pointerdown', (e: PointerEvent) => {
+        if (this.scale === 1) return;
+        this.dragging = true;
+        this.startX = e.clientX - this.x;
+        this.startY = e.clientY - this.y;
+        this.setPointerCapture(e.pointerId);
+      });
+
+      this.addEventListener('pointermove', (e: PointerEvent) => {
+        if (!this.dragging) return;
+        this.x = e.clientX - this.startX;
+        this.y = e.clientY - this.startY;
+        apply();
+      });
+
+      const endDrag = () => {
+        this.dragging = false;
+      };
+      this.addEventListener('pointerup', endDrag);
+      this.addEventListener('pointercancel', endDrag);
+
+      this.addEventListener('dblclick', () => {
+        this.scale = 1;
+        this.x = 0;
+        this.y = 0;
+        apply();
+      });
+    }
+  }
+
+  if (!customElements.get('art-viewer')) {
+    customElements.define('art-viewer', ArtViewer);
+  }
+</script>
+
+<style>
+  .art-viewer {
+    position: relative;
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: #000;
+    touch-action: none;
+    cursor: grab;
+  }
+
+  .art-viewer:active {
+    cursor: grabbing;
+  }
+
+  .art-viewer__img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transform-origin: center center;
+    will-change: transform;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  .art-viewer__hint {
+    position: absolute;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.4rem 0.9rem;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.75);
+    background: rgba(0, 0, 0, 0.45);
+    border-radius: 999px;
+    pointer-events: none;
+  }
+</style>

@@ -1,0 +1,34 @@
+---
+/**
+ * BaseLayout
+ *
+ * Shared HTML shell for every page (MPA — each page has its own URL).
+ * Includes global styles and the CSS-only landscape orientation prompt.
+ */
+import '../styles/global.css';
+import LandscapePrompt from '../components/LandscapePrompt.astro';
+import { site } from '../config/site';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title = site.title, description = site.description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>{title}</title>
+    <slot name="head" />
+  </head>
+  <body>
+    <slot />
+    <LandscapePrompt />
+  </body>
+</html>

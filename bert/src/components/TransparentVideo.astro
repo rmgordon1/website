@@ -1,0 +1,56 @@
+---
+/**
+ * TransparentVideo (§4.1)
+ *
+ * Problem: Safari/iOS play HEVC (.mp4) with alpha; Chrome/Firefox play WebM
+ * with alpha. Using <source> tags fails because each browser falsely claims it
+ * can play the other's format, producing a solid black background.
+ *
+ * Solution: a vanilla-JS custom element does User-Agent detection and sets the
+ * correct `src` before the video renders.
+ *
+ * Props:
+ *   webmSrc  - URL to the VP9/alpha .webm (Chrome/Firefox)
+ *   hevcSrc  - URL to the HEVC/alpha .mp4 (Safari/iOS)
+ *   alt      - accessible label
+ *   class    - optional extra class names for the <video>
+ */
+interface Props {
+  webmSrc: string;
+  hevcSrc: string;
+  alt?: string;
+  class?: string;
+}
+
+const { webmSrc, hevcSrc, alt = '', class: className = '' } = Astro.props;
+---
+
+<transparent-video data-webm={webmSrc} data-hevc={hevcSrc}>
+  <video class={className} autoplay loop muted playsinline aria-label={alt}></video>
+</transparent-video>
+
+<script>
+  class TransparentVideo extends HTMLElement {
+    connectedCallback() {
+      const video = this.querySelector('video');
+      if (!video) return;
+      const ua = navigator.userAgent;
+      const isSafari = /^((?!chrome|android).)*safari/i.test(ua);
+      const src = isSafari ? this.dataset.hevc : this.dataset.webm;
+      if (src) video.src = src;
+    }
+  }
+
+  if (!customElements.get('transparent-video')) {
+    customElements.define('transparent-video', TransparentVideo);
+  }
+</script>
+
+<style>
+  transparent-video,
+  transparent-video video {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+</style>

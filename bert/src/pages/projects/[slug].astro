@@ -1,0 +1,79 @@
+---
+/**
+ * Dynamic artwork page — /projects/<slug>
+ *
+ * Statically generated (one HTML file per project) via getStaticPaths().
+ * The high-res pan/zoom viewer is a self-registering web component; Astro only
+ * bundles its script onto pages that render it, so no viewer JS ships on pages
+ * that don't need it (e.g. /home, /projects). To defer heavier libraries
+ * (OpenSeadragon/PhotoSwipe), dynamically import() them inside the element's
+ * connectedCallback.
+ */
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ArtViewer from '../../components/ArtViewer.astro';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('projects', ({ data }) => !data.draft);
+  return projects.map((project) => ({
+    params: { slug: project.id },
+    props: { project },
+  }));
+}
+
+const { project } = Astro.props;
+const { data } = project;
+const { Content } = await render(project);
+---
+
+<BaseLayout title={`${data.title} — Bert`} description={data.description}>
+  <main class="artwork">
+    {
+      data.image && (
+        <ArtViewer src={data.image} alt={data.title} />
+      )
+    }
+
+    <section class="artwork__meta">
+      <h1>{data.title}</h1>
+      {data.year && <p class="artwork__year">{data.year}</p>}
+      <div class="artwork__body">
+        <Content />
+      </div>
+      <p class="artwork__back"><a href="/projects">← All projects</a></p>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .artwork {
+    position: relative;
+  }
+
+  .artwork__meta {
+    position: relative;
+    z-index: 1;
+    max-width: 42rem;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  .artwork__meta h1 {
+    margin: 0 0 0.25rem;
+    font-weight: 600;
+  }
+
+  .artwork__year {
+    margin: 0 0 1.5rem;
+    opacity: 0.6;
+  }
+
+  .artwork__body {
+    line-height: 1.6;
+  }
+
+  .artwork__back {
+    margin-top: 2rem;
+    opacity: 0.8;
+  }
+</style>

@@ -1,0 +1,58 @@
+---
+/**
+ * LandscapePrompt (§4.2)
+ *
+ * Full-screen overlay shown only when a device is in portrait orientation.
+ * Visibility is driven entirely by CSS media queries in global.css
+ * (`.landscape-prompt`) — no JavaScript device detection.
+ */
+interface Props {
+  message?: string;
+}
+
+const { message = 'Please rotate your device to landscape.' } = Astro.props;
+---
+
+<div class="landscape-prompt" role="alert" aria-live="polite">
+  <svg
+    class="rotate-icon"
+    width="64"
+    height="64"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <rect x="7" y="2" width="10" height="20" rx="2" />
+    <path d="M12 18h.01" />
+    <path d="M20 8a8 8 0 0 0-6-6" />
+    <polyline points="14 5 14 2 17 2" />
+  </svg>
+  <p>{message}</p>
+</div>
+
+<style>
+  .landscape-prompt .rotate-icon {
+    animation: nudge-rotate 2s ease-in-out infinite;
+  }
+
+  @keyframes nudge-rotate {
+    0%,
+    60%,
+    100% {
+      transform: rotate(0deg);
+    }
+    30% {
+      transform: rotate(90deg);
+    }
+  }
+
+  .landscape-prompt p {
+    margin: 0;
+    font-size: 1.1rem;
+    letter-spacing: 0.02em;
+  }
+</style>

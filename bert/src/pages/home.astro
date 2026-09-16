@@ -1,0 +1,62 @@
+---
+/**
+ * Home — /home
+ *
+ * Full-screen looping video background (the current sub_final.002.webm).
+ * Navigation is rendered as glowing video buttons per the spec; the sample
+ * below reuses the same background clip for both layers as a placeholder —
+ * swap `glowSrc` for a real "glow" render and add more buttons as needed.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { mediaUrl } from '../config/site';
+
+const bgVideo = mediaUrl('/static/video/sub_final.002.webm');
+---
+
+<BaseLayout title="Bert">
+  <!-- Full-screen background video (§3 Media-Driven UI) -->
+  <video
+    class="bg-media"
+    autoplay
+    loop
+    muted
+    playsinline
+    preload="auto"
+    src={bgVideo}
+  ></video>
+
+  <main class="home">
+    <nav class="home__nav" aria-label="Primary">
+      <a class="home__link" href="/projects">Projects</a>
+    </nav>
+  </main>
+</BaseLayout>
+
+<style>
+  .home {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    min-height: 100vh;
+    padding: 3rem;
+  }
+
+  .home__nav {
+    display: flex;
+    gap: 2rem;
+  }
+
+  .home__link {
+    font-size: 1.25rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding-bottom: 2px;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s ease;
+  }
+
+  .home__link:hover,
+  .home__link:focus-visible {
+    border-color: currentColor;
+  }
+</style>

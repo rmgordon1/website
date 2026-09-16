@@ -1,0 +1,76 @@
+---
+/**
+ * VideoButton (§3 — "Glowing" video buttons)
+ *
+ * A button rendered as a small, looping, muted video. On hover a second
+ * "glow" video (stacked directly on top via absolute positioning) fades in.
+ *
+ * Key constraint: never swap `<video src>` on hover — that causes a network
+ * fetch and flicker. Instead both videos are pre-loaded; the glow sits at
+ * opacity 0 and transitions to opacity 1 on hover for an instant, seamless
+ * effect.
+ *
+ * Props:
+ *   href     - link target
+ *   baseSrc  - looping base video URL
+ *   glowSrc  - looping "glowing" video URL (pre-loaded, hidden until hover)
+ *   label    - accessible label / visually-hidden text
+ */
+interface Props {
+  href: string;
+  baseSrc: string;
+  glowSrc: string;
+  label: string;
+}
+
+const { href, baseSrc, glowSrc, label } = Astro.props;
+---
+
+<a class="video-button" href={href} aria-label={label}>
+  <video class="layer base" autoplay loop muted playsinline preload="auto" src={baseSrc}></video>
+  <video class="layer glow" autoplay loop muted playsinline preload="auto" src={glowSrc}></video>
+  <span class="sr-only">{label}</span>
+</a>
+
+<style>
+  .video-button {
+    position: relative;
+    display: inline-block;
+    line-height: 0;
+    cursor: pointer;
+    /* Size is controlled by the base video's intrinsic size or an
+       overriding width/height set by the parent. */
+  }
+
+  .video-button .layer {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Glow video is stacked directly on top of the base, pre-loaded but hidden. */
+  .video-button .glow {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.18s ease-in-out;
+    pointer-events: none;
+  }
+
+  .video-button:hover .glow,
+  .video-button:focus-visible .glow {
+    opacity: 1;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>
