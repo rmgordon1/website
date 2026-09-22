@@ -28,6 +28,12 @@ const showdownHevc = mediaUrl('/homepage/final_showdown_reverse.mp4');
 ---
 
 <BaseLayout title="Bert">
+  {/* 16:9 stage: shrinks to the visible viewport (100svh) so mobile URL chrome
+      cannot cover the scene. All media + hotspots live inside this frame so
+      they stay aligned as the box letterboxes. */}
+  <div class="stage">
+  <div class="stage__frame">
+
   {/* Hotspots come first in the DOM so the CSS `~` sibling selector can link
       each hovered hotspot to its screen video. Paint order is controlled by
       z-index, not DOM order, so these still render on top. */}
@@ -65,19 +71,57 @@ const showdownHevc = mediaUrl('/homepage/final_showdown_reverse.mp4');
       <a class="home__link" href="/projects">Projects</a>
     </nav>
   </main>
+
+  </div>
+  </div>
 </BaseLayout>
 
 <style>
-  /* ---- Hover-reveal screen videos ------------------------------------- *
-   * Full-screen + object-fit:cover so each clip's visible square lands on
-   * the matching cockpit screen. Hidden behind everything (z-index:-3,
-   * opacity:0) at rest; a hovered hotspot brings the matching one forward. */
-  .screen-video {
+  /* ---- 16:9 stage ---------------------------------------------------- *
+   * The scene is authored at 1920×1080. Instead of stretching it to cover
+   * the viewport (which crops, and on mobile sits under the URL bar), the
+   * outer `.stage` is the *visible* viewport (`100svh` = screen minus chrome)
+   * and `.stage__frame` is the largest 16:9 box that fits inside it —
+   * same idea as object-fit: contain. Black letterbox around the frame. */
+  .stage {
     position: fixed;
+    top: 0;
+    left: 0;
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    height: 100svh;
+    background: #000;
+  }
+
+  .stage__frame {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    width: min(100%, calc(100svh * 16 / 9));
+    overflow: hidden;
+  }
+
+  /* Videos are position:fixed in global.css so they fill the viewport.
+   * Inside the frame they must fill *the frame*, not the screen. */
+  .stage__frame :global(.bg-media) {
+    position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-    height: 100dvh;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  /* ---- Hover-reveal screen videos ------------------------------------- *
+   * Sized to the 16:9 frame (not the viewport) so their visible squares land
+   * on the matching cockpit screens. Hidden behind everything (z-index:-3,
+   * opacity:0) at rest; a hovered hotspot brings the matching one forward. */
+  .screen-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
     z-index: -3;
     opacity: 0;
     pointer-events: none; /* hover is driven by the hotspots, not the video */
@@ -109,7 +153,7 @@ const showdownHevc = mediaUrl('/homepage/final_showdown_reverse.mp4');
    * % of the viewport, tuned for a ~16:9 display; adjust the custom props if
    * your screen crops differently. */
   .screen-hotspot {
-    position: fixed;
+    position: absolute;
     z-index: 30; /* on top, so it always catches the hover */
     left: var(--x);
     top: var(--y);
@@ -137,7 +181,7 @@ const showdownHevc = mediaUrl('/homepage/final_showdown_reverse.mp4');
     position: relative;
     display: flex;
     align-items: flex-end;
-    min-height: 100vh;
+    height: 100%;
     padding: 3rem;
   }
 
