@@ -18,16 +18,15 @@ import TransparentVideo from '../components/TransparentVideo.astro';
 import { mediaUrl } from '../config/site';
 
 // Back layer: full-screen background video.
-const bgBackVideo = mediaUrl('/static/video/temp_water.webm');
+const bgBackVideo = mediaUrl('/homepage/underwater.webm');
 // Front layer: transparent video — its alpha regions reveal the image behind.
-const bgWebm = mediaUrl('/static/video/sub_final.002.webm');
-// HEVC (.mp4/alpha) for Safari/iOS — PLACEHOLDER: file doesn't exist yet.
-// Generate via the `hevc_videotoolbox` command in media_mapping.txt (Mac).
-const bgHevc = mediaUrl('/static/video/sub_final.002.mp4');
+const bgWebm = mediaUrl('/homepage/sub.webm');
+// HEVC (.mp4/alpha) for Safari/iOS — PLACEHOLDER until uploaded to CloudFront.
+const bgHevc = mediaUrl('/homepage/sub.mp4');
 
 // Deepest layer: hover-reveal screen videos (transparent square + rest clear).
-const portfolioWebm = mediaUrl('/static/video/final_portfolio_reverse.webm');
-const showdownWebm = mediaUrl('/static/video/final_showdown_reverse.webm');
+const portfolioWebm = mediaUrl('/homepage/final_portfolio_reverse.webm');
+const showdownWebm = mediaUrl('/homepage/final_showdown_reverse.webm');
 ---
 
 <BaseLayout title="Bert">
@@ -56,7 +55,7 @@ const showdownWebm = mediaUrl('/static/video/final_showdown_reverse.webm');
     class="bg-media bg-media--back"
     autoplay loop muted playsinline preload="auto"
     src={bgBackVideo}
-    aria-label="Water background"
+    aria-label="Underwater background"
   ></video>
 
   {/* Front layer: transparent video (§4.1); alpha reveals the image behind */}
