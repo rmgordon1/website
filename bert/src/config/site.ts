@@ -9,7 +9,7 @@
 // CloudFront distribution base (from media_mapping.txt).
 export const CDN_BASE = 'https://dx09qkoz6th2f.cloudfront.net';
 
-// Homepage videos live at `${CDN_BASE}/homepage/<file>.webm`.
+// Homepage videos live at `${CDN_BASE}/homepage/<file>.webm` (and matching .mp4).
 // Set to '' to fall back to files in /public during local-only work.
 export const MEDIA_BASE = CDN_BASE;
 

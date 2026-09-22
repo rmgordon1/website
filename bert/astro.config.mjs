@@ -22,5 +22,8 @@ export default defineConfig({
     server: {
       allowedHosts: ['thebertgordon.com'],
     },
+    preview: {
+      allowedHosts: ['thebertgordon.com'],
+    },
   },
 });

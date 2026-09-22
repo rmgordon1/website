@@ -26,7 +26,7 @@ const { webmSrc, hevcSrc, alt = '', class: className = '' } = Astro.props;
 ---
 
 <transparent-video data-webm={webmSrc} data-hevc={hevcSrc}>
-  <video class={className} autoplay loop muted playsinline aria-label={alt}></video>
+  <video class={className} autoplay loop muted playsinline preload="auto" aria-label={alt}></video>
 </transparent-video>
 
 <script>
