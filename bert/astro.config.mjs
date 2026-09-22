@@ -10,8 +10,17 @@ export default defineConfig({
   output: 'static',
   // Keep generated HTML readable (indented, not minified) for easier inspection.
   compressHTML: false,
+  
+  // Astro's server config
   server: {
     port: 3000,
     host: true,
+  },
+  
+  // Pass Vite-specific config here
+  vite: {
+    server: {
+      allowedHosts: ['thebertgordon.com'],
+    },
   },
 });
