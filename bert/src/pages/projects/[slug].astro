@@ -12,6 +12,7 @@
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ArtViewer from '../../components/ArtViewer.astro';
+import { url } from '../../config/site';
 
 export async function getStaticPaths() {
   const projects = await getCollection('projects', ({ data }) => !data.draft);
@@ -40,7 +41,7 @@ const { Content } = await render(project);
       <div class="artwork__body">
         <Content />
       </div>
-      <p class="artwork__back"><a href="/projects">← All projects</a></p>
+      <p class="artwork__back"><a href={url('/projects')}>← All projects</a></p>
     </section>
   </main>
 </BaseLayout>

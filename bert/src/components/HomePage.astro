@@ -13,7 +13,7 @@
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import TransparentVideo from './TransparentVideo.astro';
-import { mediaUrl } from '../config/site';
+import { mediaUrl, url } from '../config/site';
 
 // Each clip has a WebM (Chrome/Firefox) and HEVC mp4 (Safari/iOS) on CloudFront.
 // TransparentVideo picks the right URL from the User-Agent.
@@ -68,7 +68,7 @@ const showdownHevc = mediaUrl('/homepage/final_showdown_reverse.mp4');
 
   <main class="home">
     <nav class="home__nav" aria-label="Primary">
-      <a class="home__link" href="/projects">Projects</a>
+      <a class="home__link" href={url('/projects')}>Projects</a>
     </nav>
   </main>
 

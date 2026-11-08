@@ -19,6 +19,16 @@ export function mediaUrl(path: string): string {
   return `${MEDIA_BASE}${clean}`;
 }
 
+/**
+ * Prefix a site-internal path with the configured `base` ('/portfolio').
+ * Use for every link/asset that lives in this site (not CDN media).
+ */
+export function url(path: string): string {
+  const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+  const clean = path.startsWith('/') ? path : `/${path}`;
+  return `${base}${clean}`;
+}
+
 export const site = {
   title: 'Bert — Art Portfolio',
   description: 'A static, media-driven art portfolio.',
