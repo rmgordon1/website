@@ -1,0 +1,27 @@
+# thebertgordon.com on the Jetson.
+#
+#   docker compose up -d --build     build and start (or update) everything
+#   docker compose logs -f           follow the logs
+#   docker compose down              stop (the database volume is kept)
+#
+# The reverse tunnel (reverse-tunnel.service, on the host) forwards EC2's
+# port 8080 to localhost:3000, which is the web container.
+services:
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    ports:
+      - "127.0.0.1:3000:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  api:
+    build: ./api
+    volumes:
+      - game-data:/data
+    restart: unless-stopped
+
+volumes:
+  game-data:

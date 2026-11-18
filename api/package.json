@@ -1,0 +1,13 @@
+{
+  "name": "thebertgordon-api",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Player names (first come, first served) and best laps for the three.js game.",
+  "engines": { "node": ">=22.13" },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test"
+  }
+}

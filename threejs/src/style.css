@@ -1,0 +1,478 @@
+*,
+*::before,
+*::after
+{
+    box-sizing: border-box;
+}
+
+html,
+body
+{
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    background: #0a1620;
+    color: #f2f6f8;
+    font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+}
+
+canvas.webgl
+{
+    position: fixed;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+kbd
+{
+    display: inline-block;
+    min-width: 1.5em;
+    padding: 0.15em 0.4em;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    font: inherit;
+    font-size: 0.82em;
+    text-align: center;
+}
+
+/* ---------------------------------------------------------------- overlay */
+
+.ui
+{
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    user-select: none;
+}
+
+.crosshair
+{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    margin: -2.5px 0 0 -2.5px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.75);
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
+    transition: opacity 0.2s;
+}
+
+.crosshair.is-hidden
+{
+    opacity: 0;
+}
+
+.prompt
+{
+    position: absolute;
+    bottom: 18%;
+    left: 50%;
+    transform: translateX(-50%) translateY(6px);
+    padding: 0.55em 1.1em;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+    background: rgba(8, 20, 30, 0.6);
+    backdrop-filter: blur(6px);
+    font-size: 0.95rem;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.18s, transform 0.18s;
+}
+
+.prompt.is-visible
+{
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.course
+{
+    position: absolute;
+    top: 1.4rem;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.4em 0.9em;
+    border-radius: 999px;
+    background: rgba(8, 20, 30, 0.55);
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+    opacity: 0;
+    transition: opacity 0.25s;
+}
+
+.course.is-visible
+{
+    opacity: 1;
+}
+
+.lap-time
+{
+    position: absolute;
+    top: 4.2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 2.4rem;
+    font-weight: 300;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+    opacity: 0;
+    transition: opacity 0.35s;
+}
+
+.lap-time.is-visible
+{
+    opacity: 1;
+}
+
+.lap-time.is-finished
+{
+    color: #ffe08a;
+}
+
+.lap-time.is-dq
+{
+    color: #ff6b6b;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+}
+
+.notice
+{
+    position: absolute;
+    top: 14%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.5em 1em;
+    border-radius: 6px;
+    background: rgba(8, 20, 30, 0.55);
+    font-size: 0.9rem;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.notice.is-visible
+{
+    opacity: 1;
+}
+
+/* ---------------------------------------------------------------- readout */
+
+.readout
+{
+    position: absolute;
+    right: 2rem;
+    bottom: 2rem;
+    text-align: right;
+    opacity: 0;
+    transition: opacity 0.25s;
+}
+
+.readout.is-visible
+{
+    opacity: 1;
+}
+
+.readout__speed
+{
+    font-size: 2.6rem;
+    font-weight: 300;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+}
+
+.readout__speed small
+{
+    margin-left: 0.25rem;
+    font-size: 0.9rem;
+    opacity: 0.65;
+}
+
+.throttle
+{
+    width: 132px;
+    height: 4px;
+    margin-top: 0.6rem;
+    margin-left: auto;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+}
+
+.throttle__fill
+{
+    width: 0;
+    height: 100%;
+    border-radius: 2px;
+    background: #6fe3c4;
+    transition: width 0.1s linear;
+}
+
+/* --------------------------------------------------------------- controls */
+
+.controls
+{
+    position: absolute;
+    bottom: 2rem;
+    left: 2rem;
+    padding: 1rem 1.2rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    background: rgba(8, 20, 30, 0.45);
+    backdrop-filter: blur(6px);
+    font-size: 0.82rem;
+    transition: opacity 0.2s;
+}
+
+.controls.is-hidden
+{
+    opacity: 0;
+}
+
+.controls h2
+{
+    margin: 0 0 0.7rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.6;
+}
+
+.controls ul
+{
+    display: grid;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.controls ul.is-inactive
+{
+    display: none;
+}
+
+.controls li
+{
+    display: flex;
+    gap: 0.25rem;
+    align-items: center;
+}
+
+.controls li span
+{
+    margin-left: 0.5rem;
+    opacity: 0.8;
+}
+
+/* ------------------------------------------------------------------ start */
+
+@font-face
+{
+    font-family: "Neon";
+    src: url("./assets/fonts/Neon.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+.start
+{
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: radial-gradient(circle at 50% 40%, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.72));
+    color: #e10600;
+    font-family: "Neon", sans-serif;
+    font-size: clamp(1.7rem, 3.4vw, 2.6rem);
+    transition: opacity 0.4s;
+}
+
+.start.is-hidden
+{
+    opacity: 0;
+    pointer-events: none;
+}
+
+.start__panel
+{
+    max-width: min(62rem, 92vw);
+    padding: 2.5rem;
+    text-align: center;
+}
+
+.start__panel h1
+{
+    margin: 0 0 1rem;
+    font-size: clamp(5.5rem, 14vw, 10rem);
+    font-weight: normal;
+    letter-spacing: 0.02em;
+}
+
+.start__panel button
+{
+    margin-top: 1.6rem;
+    padding: 0.8em 2.2em;
+    border: 1px solid rgba(225, 6, 0, 0.55);
+    border-radius: 999px;
+    background: rgba(225, 6, 0, 0.08);
+    color: inherit;
+    font: inherit;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.start__panel button:hover
+{
+    border-color: #e10600;
+    background: rgba(225, 6, 0, 0.2);
+}
+
+.start__hint
+{
+    max-width: 28rem;
+    margin: 1.4rem auto 0;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    background: rgba(8, 20, 30, 0.88);
+    font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+    font-size: 0.95rem;
+    line-height: 1.45;
+    letter-spacing: 0;
+    color: #f2f6f8;
+}
+
+/* First thing after the intro. Same panel as paused, with a box to type in. */
+.name-screen h1
+{
+    font-size: clamp(3rem, 8vw, 6rem);
+}
+
+.name-screen__input
+{
+    display: block;
+    width: min(22rem, 80vw);
+    margin: 0.4rem auto 0;
+    padding: 0.5em 0.9em;
+    border: 1px solid rgba(225, 6, 0, 0.55);
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.55);
+    color: #f2f6f8;
+    font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+    font-size: 1.4rem;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.name-screen__input::placeholder
+{
+    color: rgba(242, 246, 248, 0.4);
+}
+
+.name-screen__input:focus
+{
+    border-color: #e10600;
+    box-shadow: 0 0 0.6em rgba(225, 6, 0, 0.45);
+}
+
+/* The opening: black screen, the elephant turning. The HUD and start screen wait. */
+body.is-intro .ui
+{
+    visibility: hidden;
+}
+
+body.is-intro .start,
+body.is-intro .name-screen
+{
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Above the turning elephant until everything has loaded. Neon 80s, the start screen's red. */
+.loading
+{
+    display: none;
+    position: fixed;
+    left: 50%;
+    top: 20%;
+    transform: translate(-50%, -100%);
+    color: #e10600;
+    font-family: "Neon", sans-serif;
+    font-size: clamp(3rem, 7vw, 5.5rem);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    text-shadow: 0 0 0.12em rgba(225, 6, 0, 0.85), 0 0 0.45em rgba(225, 6, 0, 0.45);
+    pointer-events: none;
+    transition: opacity 0.6s;
+}
+
+body.is-intro .loading
+{
+    display: block;
+}
+
+body.is-loaded .loading
+{
+    opacity: 0;
+}
+
+/* The dots keep their room, so the word never shifts: none, one, two, three, again. */
+.loading__dots
+{
+    display: inline-block;
+    animation: loading-dots 1.6s steps(4, jump-none) infinite;
+}
+
+@keyframes loading-dots
+{
+    /* Negative insets leave room for the glow round each dot. */
+    from { clip-path: inset(-0.5em 100% -0.5em -0.5em); }
+    to { clip-path: inset(-0.5em -0.5em -0.5em -0.5em); }
+}
+
+/* "portfolio" next to play / resume: the same pill, quieter until hovered. */
+.start__panel .start__secondary
+{
+    margin-left: 0.8em;
+    border-color: rgba(225, 6, 0, 0.3);
+    background: transparent;
+    opacity: 0.8;
+}
+
+.start__panel .start__secondary:hover
+{
+    opacity: 1;
+}
+
+/*
+ * Leaving for the portfolio: the opening again. Black, the elephant turning,
+ * "loading..." over her, while the portfolio loads out of sight.
+ */
+body.is-leaving .ui
+{
+    visibility: hidden;
+}
+
+body.is-leaving .start
+{
+    opacity: 0;
+    pointer-events: none;
+}
+
+body.is-leaving .loading
+{
+    display: block;
+    opacity: 1;
+}

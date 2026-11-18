@@ -1,0 +1,11 @@
+**/node_modules
+**/dist
+**/.git
+**/.astro
+**/.next
+.git
+*.pem
+**/AWS_Infrastructure.txt
+**/workflow.sh
+api/data
+TODO.md

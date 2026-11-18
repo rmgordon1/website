@@ -22,3 +22,4 @@ yarn-error.log*
 
 # local workflow helper
 workflow.sh
+AWS_Infrastructure.txt

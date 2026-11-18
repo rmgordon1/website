@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bert's Blog</title>
+    <!-- The portfolio's icons, shared by both halves of the site (nginx serves them under /portfolio/). -->
+    <link rel="icon" href="/portfolio/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="/portfolio/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/portfolio/icons/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/portfolio/icons/apple-touch-icon.png">
+    <link rel="manifest" href="/portfolio/site.webmanifest">
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <canvas class="webgl"></canvas>
+
+    <div class="ui">
+        <div class="crosshair" data-crosshair></div>
+
+        <div class="course" data-course></div>
+        <div class="lap-time" data-lap-time></div>
+        <div class="prompt" data-prompt></div>
+        <div class="notice" data-notice></div>
+
+        <div class="readout" data-readout>
+            <div class="readout__speed"><span data-speed>0.0</span><small>kn</small></div>
+            <div class="throttle">
+                <div class="throttle__fill" data-throttle></div>
+            </div>
+        </div>
+
+        <div class="controls" data-controls>
+            <h2>Controls</h2>
+            <ul data-controls-walk>
+                <li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><span>Walk</span></li>
+                <li><kbd>Shift</kbd><span>Sprint</span></li>
+                <li><kbd>Space</kbd><span>Jump</span></li>
+                <li><kbd>E</kbd><span>Mount the elephant, enter a castle door, or enter the submarine</span></li>
+                <li><kbd>H</kbd><span>Hide this panel</span></li>
+                <li><kbd>Esc</kbd><span>Release the mouse</span></li>
+            </ul>
+            <ul data-controls-ride class="is-inactive">
+                <li><kbd>A</kbd><kbd>D</kbd><span>Steer</span></li>
+                <li><kbd>W</kbd><kbd>S</kbd><span data-aim-label>Aim down / up</span></li>
+                <li><kbd>Shift</kbd><span>Fly faster</span></li>
+                <li><kbd>Space</kbd><span>Fly forward</span></li>
+                <li><kbd>E</kbd><span>Dismount</span></li>
+                <li><kbd>I</kbd><span data-invert-label>Invert up / down</span></li>
+                <li><kbd>V</kbd><span>Switch between first and third person</span></li>
+                <li><kbd>H</kbd><span>Hide this panel</span></li>
+                <li><kbd>Esc</kbd><span>Release the mouse</span></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="loading" aria-live="polite">loading<span class="loading__dots" aria-hidden="true">...</span></div>
+
+    <div class="start name-screen is-hidden" data-name-screen>
+        <form class="start__panel" data-name-form autocomplete="off" novalidate>
+            <h1>please enter name</h1>
+            <input class="name-screen__input" type="text" name="player-name" data-name-input
+                maxlength="16" spellcheck="false" aria-label="Your name" placeholder="your name">
+            <button type="submit">play</button>
+            <button type="button" class="start__secondary" data-portfolio-button>portfolio</button>
+            <p class="start__hint" data-name-hint hidden></p>
+        </form>
+    </div>
+
+    <div class="start" data-start>
+        <div class="start__panel">
+            <h1>paused</h1>
+            <button type="button" data-start-button>resume</button>
+            <button type="button" class="start__secondary" data-portfolio-button>portfolio</button>
+            <p class="start__hint" data-start-hint hidden></p>
+        </div>
+    </div>
+
+    <script type="module" src="./script.js"></script>
+</body>
+</html>

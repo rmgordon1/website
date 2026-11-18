@@ -46,3 +46,11 @@ bertswebsite.pem
 bert/workflow.sh
 
 # /public/static/video/*
+
+# three.js game build output and local API database
+threejs/dist/
+threejs/.env*.local
+api/data/
+
+# copied from node_modules/three by tools/copy-draco.mjs
+threejs/static/draco/
