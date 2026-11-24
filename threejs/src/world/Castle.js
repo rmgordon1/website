@@ -3,6 +3,7 @@ import { createGLTFLoader } from './gltfLoader.js'
 import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js'
 import { ReentryFire } from './ReentryFire.js'
 import { assetUrl } from '../config.js'
+import { loadCloud } from './Cloud.js'
 
 /** The outer castles. Served out of static/. */
 const RING_URL = assetUrl('/models/triple_castle.glb')
@@ -204,6 +205,43 @@ const DECK_FOOTPRINT = [
     [-0.66, 0.66, 2.96, 3.04],
     [-0.62, 0.62, 3.02, 5.58]
 ]
+
+/**
+ * The clouds under the courts, built at load from copies of one puff (see
+ * Cloud.js). Fitted to the clouds that used to be baked into the castle
+ * exports: the same number of puffs, filling the court's plan, over the same
+ * heights and with the same puff sizes, in model units. The main cloud's
+ * band is what CLOUD_TOP and CLOUD_BOTTOM are set against.
+ */
+export const CLOUD_LAYOUT = {
+    main: {
+        name: 'main',
+        seed: 0x5eed01,
+        count: 1577,
+        footprint: [[MAIN_COURT.minX, MAIN_COURT.maxX, MAIN_COURT.minZ, MAIN_COURT.maxZ]],
+        bottom: -7.22,
+        top: -2.3,
+        puff: [1.2, 1.8],
+        rise: 0.3,
+        taper: 0.1,
+        rim: 1,
+        lift: 0.4
+    },
+    ring: {
+        name: 'ring',
+        seed: 0x5eed02,
+        count: 454,
+        // The deck, without the walkway out of the arch.
+        footprint: DECK_FOOTPRINT.filter((box) => box[3] <= 3.04),
+        bottom: -2.38,
+        top: -0.8,
+        puff: [0.4, 0.6],
+        rise: 1.4,
+        taper: 0,
+        rim: 0.5,
+        lift: 0.5
+    }
+}
 
 /**
  * Four treads in the middle of the front face, model units. Each one
@@ -1499,12 +1537,29 @@ export class Castle
         this.reentryHeat = 0
         this.reentry = null
         this.viewport = null
+        /** The bobbing cloud under the court. Null until it has been built. */
+        this.cloud = null
 
         const url = variant === 'main' ? MAIN_URL : RING_URL
+        // Out of step with the other castles' clouds.
+        const cloudPhase = x * 0.037 + z * 0.061
         this.ready = loadModel
-            ? loadCastleModel(url)
-                .then((model) =>
+            ? Promise.all([
+                loadCastleModel(url),
+                loadCloud(CLOUD_LAYOUT[variant], cloudPhase).catch((error) =>
                 {
+                    console.warn('Cloud model failed to load; the castle goes up without it.', error)
+                    return null
+                })
+            ])
+                .then(([model, cloud]) =>
+                {
+                    // Same parent as the castle mesh, so it shares SCALE.
+                    if (cloud)
+                    {
+                        model.add(cloud.group)
+                        this.cloud = cloud
+                    }
                     this.#useModel(model)
                     if (this.variant !== 'main') return null
 
@@ -1598,9 +1653,11 @@ export class Castle
         return this.submarineFocus.getWorldPosition(target)
     }
 
-    /** Advances the hatch, the chamber lamps, and, on the starting castle, the sign. */
+    /** Advances the cloud, the hatch, the chamber lamps, and, on the starting castle, the sign. */
     update(delta, visitor = null)
     {
+        this.cloud?.update(delta)
+
         if (this.departing)
         {
             if (this.hatchAction && (this.hatchState === 'open' || this.hatchState === 'opening'))

@@ -730,6 +730,7 @@ export class Game
         this.hud.setPitchInverted(this.invertPitch)
 
         this.castle.update(delta, this.player.position)
+        for (const castle of this.outerCastles) castle.update(delta)
         this.racetrack.update(delta, this.elapsed)
         this.confetti.update(delta)
         this.dockBeacons.update(delta, this.state === 'riding')
@@ -926,7 +927,9 @@ export class Game
 
         const smoothing = 1 - Math.exp(-7 * delta)
         this.chasePosition.lerp(desired, smoothing)
-        this.chaseTarget.lerp(target, 1 - Math.exp(-12 * delta))
+        // Look straight at her. Easing the look point toward a moving target
+        // leaves a lag that changes with frame time, so she surges on screen.
+        this.chaseTarget.copy(target)
 
         // chasePosition is where the camera would like to be. The lens goes
         // along the line from her to there, and stops short of any stone.

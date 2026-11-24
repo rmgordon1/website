@@ -1,0 +1,31 @@
+1) turn phone sideways screen
+	rotating skull?
+
+2) loading screen
+	* slowly entering cave
+	* as you enter cave, have red eyes open in darkness
+	* more and more open as the camera appraoches
+	* make outside of cave lush and have trolls or something
+
+3) portfolio screen
+	* panels
+	* porthole windows with dynamic background
+
+4) homescreen transition - portfolio
+	* everything BUT the portfolio screen will turn black. 
+	* the portfolio screen will then move up to the top of the screen, it will "pull the tank up from below the screen"
+	* then the portfolio screen will move left to the top left corner. the screen will not display "back to home"
+	* as it moves left, the claw + rail will be pulled into view from the right
+
+======================completed=================================
+
+
+======================shelved====================================
+3) portfolio screen
+	* There is a rail with a claw attached to it on the top of the screen
+	* the dates of the individual uploads are the measurement ticks about the rail
+	* moving between dates shifts claw left/right (there will be buttons on the top of the screen too (L/R/drop)) - claw has inertia
+	* after choosing 'drop' on a date, the claw will drop
+	* there is a tank beneath the claw with fetus like creatures swimming around
+	* the claw will grab something and pull up a matrix like tank with a fetus like creature inside
+	* NEEDS FOLLOW UP TRANSITION TO PORTFOLIO IMAGE

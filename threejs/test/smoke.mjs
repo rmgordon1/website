@@ -6,7 +6,8 @@
 
 import * as THREE from 'three'
 import { Elephant, ELEPHANT } from '../src/entities/Elephant.js'
-import { Castle, CASTLE, CASTLE_RING, MAIN_YAW, DECK_Y, measureFlightVoxels, voxelSphereHits, voxelSweepSphere } from '../src/world/Castle.js'
+import { Castle, CASTLE, CASTLE_RING, CLOUD_LAYOUT, MAIN_YAW, DECK_Y, measureFlightVoxels, voxelSphereHits, voxelSweepSphere } from '../src/world/Castle.js'
+import { Cloud, buildCloudGeometry, placePuffs } from '../src/world/Cloud.js'
 import { HOOP_COUNT, HOOP_Z_JITTER, Racetrack, hoopPoint, paintFlag } from '../src/world/Racetrack.js'
 import { Confetti } from '../src/world/Confetti.js'
 import { BrickWall, brickSlots, BRICK } from '../src/world/BrickWall.js'
@@ -1159,6 +1160,84 @@ group('brick wall', () =>
 
     for (let frame = 0; frame < 180; frame++) wall.update(1 / 60, elephant)
     check('loose bricks disappear once they have drifted', rising.alive === false)
+})
+
+group('cloud', () =>
+{
+    // Same shape as cloud.glb: a flat-shaded icosphere, 80 triangles.
+    const puff = new THREE.IcosahedronGeometry(1, 1)
+
+    for (const [name, layout] of Object.entries(CLOUD_LAYOUT))
+    {
+        const puffs = placePuffs(layout)
+        const again = placePuffs(layout)
+        check(`${name}: places every puff`, puffs.length === layout.count, String(puffs.length))
+        check(`${name}: the same seed gives the same cloud`,
+            puffs.every((entry, index) => entry.center.equals(again[index].center) && entry.radii.equals(again[index].radii)))
+        check(`${name}: puffs stay in the band`,
+            puffs.every((entry) => entry.center.y >= layout.bottom - 1e-9 && entry.center.y <= layout.top + 1e-9))
+        check(`${name}: puffs stay over the footprint`, puffs.every((entry) => layout.footprint.some(([minX, maxX, minZ, maxZ]) =>
+            entry.center.x >= minX && entry.center.x <= maxX && entry.center.z >= minZ && entry.center.z <= maxZ)))
+
+        const skin = buildCloudGeometry(puff, layout, 0)
+        const geometry = buildCloudGeometry(puff, layout)
+        const deeper = buildCloudGeometry(puff, layout, 2)
+        const { triangles, trianglesBeforeCull } = geometry.userData
+        check(`${name}: the cull drops most of the buried triangles`, triangles < trianglesBeforeCull * 0.5,
+            `${triangles} of ${trianglesBeforeCull}`)
+        check(`${name}: a deeper cull keeps more`,
+            skin.userData.triangles < triangles && triangles < deeper.userData.triangles,
+            `${skin.userData.triangles} / ${triangles} / ${deeper.userData.triangles}`)
+        check(`${name}: merged geometry is finite`, allFinite(geometry))
+
+        const normals = geometry.attributes.normal
+        let unit = true
+        for (let index = 0; index < normals.count; index++)
+        {
+            const length = Math.hypot(normals.getX(index), normals.getY(index), normals.getZ(index))
+            if (Math.abs(length - 1) > 1e-4) unit = false
+        }
+        check(`${name}: normals are unit length`, unit)
+        check(`${name}: keeps the uvs`, geometry.attributes.uv?.count === geometry.attributes.position.count)
+    }
+
+    // The grid and bitmask cull against a brute-force count, on a small cloud.
+    const small = { ...CLOUD_LAYOUT.ring, count: 80 }
+    const puffs = placePuffs(small)
+    const inside = (point, other) =>
+    {
+        const local = point.clone().sub(other.center).applyQuaternion(other.quaternion.clone().invert()).divide(other.radii)
+        return local.lengthSq() < 1 - 1e-6
+    }
+    const position = puff.attributes.position
+    const corner = (entry, vertex) => new THREE.Vector3().fromBufferAttribute(position, vertex)
+        .multiply(entry.radii).applyQuaternion(entry.quaternion).add(entry.center)
+    for (const depth of [0, 1])
+    {
+        let expected = 0
+        for (const entry of puffs)
+        {
+            for (let triangle = 0; triangle < position.count / 3; triangle++)
+            {
+                const points = [0, 1, 2].map((k) => corner(entry, triangle * 3 + k))
+                const buried = puffs.filter((other) => other !== entry && points.every((point) => inside(point, other))).length
+                if (buried <= depth) expected++
+            }
+        }
+        const built = buildCloudGeometry(puff, small, depth).userData.triangles
+        check(`cull matches a brute-force count at depth ${depth}`, built === expected, `${built} vs ${expected}`)
+    }
+
+    const cloud = new Cloud(buildCloudGeometry(puff, small), new THREE.MeshBasicMaterial())
+    check('the cloud casts no shadow', cloud.mesh.castShadow === false)
+    const heights = []
+    for (let frame = 0; frame < 60 * 20; frame++)
+    {
+        cloud.update(1 / 60)
+        heights.push(cloud.group.position.y)
+    }
+    const swing = Math.max(...heights) - Math.min(...heights)
+    check('the cloud bobs gently', swing > 0.05 && swing < 0.2, swing.toFixed(3))
 })
 
 console.log(`\n${checks - failures}/${checks} checks passed`)
