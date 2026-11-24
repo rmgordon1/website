@@ -67,6 +67,20 @@ const INTRO_BLACK = new THREE.Color('#000000')
  */
 const START_CUBE_HALF = 14.5
 
+/**
+ * TEMPORARY perf experiment: the sun's shadow map is redrawn this often, in
+ * seconds, instead of every frame. Drawing it means drawing every
+ * shadow-casting mesh again into a 4096² map. The castles never move, so
+ * their shadows do not need it; moving things (the elephant, loose bricks)
+ * have shadows that step at this rate instead of following smoothly.
+ * ?shadowevery=<seconds> overrides it; ?shadowevery=0 is every frame (the old way).
+ */
+const SHADOW_EVERY = (() =>
+{
+    const value = Number(new URLSearchParams(location.search).get('shadowevery'))
+    return new URLSearchParams(location.search).has('shadowevery') && Number.isFinite(value) ? value : 1
+})()
+
 /** How far below the deck a fall has to go before she is put back at the door. */
 const VOID_DROP = 40
 
@@ -202,6 +216,8 @@ export class Game
     {
         for (const child of this.intro.hidden) child.visible = true
         this.intro.hidden.clear()
+        // The last shadow map was drawn with the world hidden.
+        this.renderer.shadowMap.needsUpdate = true
     }
 
     #updateIntro(delta)
@@ -435,6 +451,14 @@ export class Game
         this.elephant.park(spot, yaw)
         this.#mountElephant()
 
+        // TEMPORARY perf experiment: ?nocube skips the brick box and its Matrix rain
+        // entirely (no bricks, no rain shader, no brick.glb download).
+        if (new URLSearchParams(location.search).has('nocube'))
+        {
+            console.info('[perf] start cube skipped (?nocube)')
+            return
+        }
+
         // A brick box round her, wide enough that the chase camera starts
         // inside it too. She breaks out the same way she breaks the wall.
         this.startCube = new BrickWall({
@@ -463,6 +487,11 @@ export class Game
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
         this.renderer.shadowMap.enabled = true
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
+        // Redrawn on a timer in #tick (see SHADOW_EVERY), and whenever the world reappears.
+        this.renderer.shadowMap.autoUpdate = SHADOW_EVERY <= 0
+        this.renderer.shadowMap.needsUpdate = true
+        this.shadowClock = 0
+        console.info(`[perf] shadow map redrawn ${SHADOW_EVERY <= 0 ? 'every frame' : `every ${SHADOW_EVERY} s`}`)
         this.renderer.toneMapping = THREE.ACESFilmicToneMapping
         this.renderer.toneMappingExposure = 0.62
     }
@@ -488,6 +517,14 @@ export class Game
             this.scene.add(castle.group)
             return castle
         })
+
+        // TEMPORARY perf experiment: ?nocastles hides every castle (no draw, no shadow).
+        // They still load and keep their collision, so the game runs the same otherwise.
+        if (new URLSearchParams(location.search).has('nocastles'))
+        {
+            for (const castle of [this.castle, ...this.outerCastles]) castle.group.visible = false
+            console.info('[perf] castles hidden (?nocastles)')
+        }
 
         this.interior = new Interior()
         this.scene.add(this.interior.group)
@@ -687,6 +724,16 @@ export class Game
     #tick()
     {
         const delta = Math.min(this.clock.getDelta(), 0.05)
+
+        if (SHADOW_EVERY > 0)
+        {
+            this.shadowClock += delta
+            if (this.shadowClock >= SHADOW_EVERY)
+            {
+                this.shadowClock = 0
+                this.renderer.shadowMap.needsUpdate = true
+            }
+        }
 
         if (this.leaving)
         {

@@ -4,6 +4,7 @@ import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js'
 import { ReentryFire } from './ReentryFire.js'
 import { assetUrl } from '../config.js'
 import { loadCloud } from './Cloud.js'
+import { simplifyByClustering } from './simplifyByClustering.js'
 
 /** The outer castles. Served out of static/. */
 const RING_URL = assetUrl('/models/triple_castle.glb')
@@ -844,6 +845,84 @@ function creaseNormals(root)
     console.info(`castle normals: creased ${meshes} meshes at ${THREE.MathUtils.radToDeg(CREASE_ANGLE)}°`)
 }
 
+/**
+ * The cloud shells under the castles are most of their triangles (1.5M of
+ * the main castle's 1.64M, 436k of a triple castle's 450k), see-through and
+ * double-sided, so drawn twice. Past a distance, swap each for a clustered
+ * copy with about a tenth of the triangles. The cloud is soft, so at range
+ * the difference does not read.
+ *
+ * TEMPORARY perf experiment flag: ?nolod keeps the full clouds at every distance.
+ */
+/** Clustering grid, in the export's units (SCALE = 5, so 1.25 m). */
+const CLOUD_LOD_CELL = 0.25
+/** Metres beyond the cloud's farthest point from its origin before the swap. */
+const CLOUD_LOD_MARGIN = 60
+
+function cloudLodDisabled()
+{
+    try
+    {
+        return new URLSearchParams(globalThis.location?.search ?? '').has('nolod')
+    }
+    catch
+    {
+        return false
+    }
+}
+
+function addCloudLods(root)
+{
+    if (cloudLodDisabled()) return
+
+    const clouds = []
+    root.traverse((child) =>
+    {
+        if (!child.isMesh || Array.isArray(child.material)) return
+        if (child.material?.name?.includes('Ivory')) clouds.push(child)
+    })
+
+    for (const mesh of clouds)
+    {
+        const started = performance.now()
+        const far = new THREE.Mesh(simplifyByClustering(mesh.geometry, CLOUD_LOD_CELL), mesh.material)
+        far.name = `${mesh.name} (far)`
+        far.castShadow = mesh.castShadow
+        far.receiveShadow = mesh.receiveShadow
+        far.renderOrder = mesh.renderOrder
+
+        // The LOD takes the mesh's place and transform; the mesh sits in it untransformed.
+        const lod = new THREE.LOD()
+        lod.name = `${mesh.name} (lod)`
+        lod.position.copy(mesh.position)
+        lod.quaternion.copy(mesh.quaternion)
+        lod.scale.copy(mesh.scale)
+        mesh.parent.add(lod)
+        mesh.parent.remove(mesh)
+        mesh.position.set(0, 0, 0)
+        mesh.quaternion.identity()
+        mesh.scale.set(1, 1, 1)
+
+        // Farthest point of the cloud from the LOD's origin, in world metres.
+        mesh.geometry.computeBoundingBox()
+        const box = mesh.geometry.boundingBox
+        const corner = new THREE.Vector3()
+        let reach = 0
+        for (let index = 0; index < 8; index++)
+        {
+            corner.set(index & 1 ? box.max.x : box.min.x, index & 2 ? box.max.y : box.min.y, index & 4 ? box.max.z : box.min.z)
+            reach = Math.max(reach, corner.multiply(lod.scale).length())
+        }
+        const swapAt = reach * SCALE + CLOUD_LOD_MARGIN
+
+        lod.addLevel(mesh, 0)
+        lod.addLevel(far, swapAt, 0.05)
+
+        const before = (mesh.geometry.index ? mesh.geometry.index.count : mesh.geometry.attributes.position.count) / 3
+        console.info(`[perf] cloud LOD: ${before} -> ${far.geometry.index.count / 3} triangles past ${Math.round(swapAt)} m (${Math.round(performance.now() - started)} ms)`)
+    }
+}
+
 const templatePromises = new Map()
 let submarinePromise = null
 
@@ -1013,6 +1092,7 @@ function loadTemplate(url)
 
             prepareSignLights(gltf.scene)
             creaseNormals(gltf.scene)
+            addCloudLods(gltf.scene)
 
             return gltf.scene
         }))

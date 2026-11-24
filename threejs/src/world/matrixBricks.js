@@ -218,12 +218,43 @@ vec3 matrixRain(vec3 p, vec3 n)
 }
 `
 
-const FRAGMENT_BODY = /* glsl */`
+/**
+ * TEMPORARY perf experiment: ?oldrain keeps the old path, where the rain
+ * faces run the full lit, shadowed brick shader first and then throw that
+ * colour away. By default they skip all of it (see FRAGMENT_EARLY).
+ */
+const LIT_RAIN = typeof location !== 'undefined' && new URLSearchParams(location.search).has('oldrain')
+
+/** Facing the centre, and on the inner shell rather than the outer one. */
+const IS_RAIN_FACE = 'dot(n, -p) > 0.0 && abs(dot(p, n)) < uMatrixHalf'
+
+/**
+ * At the very top of main(): a rain face writes its colour and stops, before
+ * any texture reads, lighting or shadow lookups. It still goes through the
+ * same tone mapping, colour space and fog as the rest of the scene, so it
+ * looks the same as before.
+ */
+const FRAGMENT_EARLY = /* glsl */`
 {
     vec3 n = normalize(vMatrixNormal);
     vec3 p = vMatrixPosition;
-    // Facing the centre, and on the inner shell rather than the outer one.
-    if (dot(n, -p) > 0.0 && abs(dot(p, n)) < uMatrixHalf)
+    if (${IS_RAIN_FACE})
+    {
+        gl_FragColor = vec4(matrixRain(p, n), 1.0);
+        #include <tonemapping_fragment>
+        #include <colorspace_fragment>
+        #include <fog_fragment>
+        return;
+    }
+}
+`
+
+/** The old way: light the brick, then replace the result on rain faces. */
+const FRAGMENT_LATE = /* glsl */`
+{
+    vec3 n = normalize(vMatrixNormal);
+    vec3 p = vMatrixPosition;
+    if (${IS_RAIN_FACE})
         outgoingLight = matrixRain(p, n);
 }
 #include <opaque_fragment>
@@ -257,9 +288,11 @@ export function withMatrixInside(material, half, message = null)
             .replace('#include <project_vertex>', `${VERTEX_BODY}\n#include <project_vertex>`)
         shader.fragmentShader = shader.fragmentShader
             .replace('#include <common>', `#include <common>\n${FRAGMENT_HEAD}`)
-            .replace('#include <opaque_fragment>', FRAGMENT_BODY)
+        shader.fragmentShader = LIT_RAIN
+            ? shader.fragmentShader.replace('#include <opaque_fragment>', FRAGMENT_LATE)
+            : shader.fragmentShader.replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${FRAGMENT_EARLY}`)
     }
-    patched.customProgramCacheKey = () => 'matrix-inside'
+    patched.customProgramCacheKey = () => (LIT_RAIN ? 'matrix-inside-lit' : 'matrix-inside')
     patched.userData.matrixMessage = words
 
     return patched
