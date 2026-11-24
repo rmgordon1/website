@@ -108,10 +108,9 @@ export class Game
         this.#setupWorld()
 
         // Once, as the page opens. Offline, the board just stays blank.
-        fetchLeaderboard(LEADERBOARD_ROWS).then((laps) =>
-        {
-            if (laps) this.castle.setLeaderboard(laps)
-        })
+        // As the page opens, and again after every lap the server takes.
+        // Offline, the board just stays as it was (blank at first).
+        this.#refreshLeaderboard()
 
         this.input = new Input(canvas)
         this.hud = new HUD()
@@ -735,6 +734,24 @@ export class Game
         this.racetrack.setViewport(buffer.y, this.camera.fov)
     }
 
+    /** True when the elephant's position or heading changed since the last check. */
+    #elephantMoved()
+    {
+        const { position, yaw } = this.elephant
+        const last = this.shadowElephant ??= { x: position.x, y: position.y, z: position.z, yaw }
+
+        const moved = Math.abs(position.x - last.x) > 1e-4
+            || Math.abs(position.y - last.y) > 1e-4
+            || Math.abs(position.z - last.z) > 1e-4
+            || Math.abs(yaw - last.yaw) > 1e-5
+
+        last.x = position.x
+        last.y = position.y
+        last.z = position.z
+        last.yaw = yaw
+        return moved
+    }
+
     #tick()
     {
         const delta = Math.min(this.clock.getDelta(), 0.05)
@@ -742,7 +759,10 @@ export class Game
         if (SHADOW_EVERY > 0)
         {
             this.shadowClock += delta
-            if (this.shadowClock >= SHADOW_EVERY)
+            // A moving elephant drags the shadow volume with her (the sun
+            // follows her), so a throttled map visibly snaps once per redraw.
+            // Redraw every frame while she moves; idle frames keep the saving.
+            if (this.#elephantMoved() || this.shadowClock >= SHADOW_EVERY)
             {
                 this.shadowClock = 0
                 this.renderer.shadowMap.needsUpdate = true
@@ -979,7 +999,23 @@ export class Game
     {
         submitLap(this.playerName, seconds).then((result) =>
         {
-            if (result?.improved) this.hud.setNotice('new best lap')
+            if (!result) return
+            if (result.improved) this.hud.setNotice('new best lap')
+            // Saved: put the board up to date, with this lap and anyone else's since the page opened.
+            this.#refreshLeaderboard()
+        })
+    }
+
+    /**
+     * Fetches the best laps and writes them on the board. Each call is
+     * numbered, so a slow answer can never overwrite a newer one.
+     */
+    #refreshLeaderboard()
+    {
+        const request = this.leaderboardRequest = (this.leaderboardRequest ?? 0) + 1
+        fetchLeaderboard(LEADERBOARD_ROWS).then((laps) =>
+        {
+            if (laps && request === this.leaderboardRequest) this.castle.setLeaderboard(laps)
         })
     }
 
