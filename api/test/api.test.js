@@ -66,3 +66,19 @@ test('best laps only improve, and need the token', async (t) =>
     const board = await call('GET', '/api/leaderboard?limit=5')
     assert.deepEqual(board.body.laps, [{ name: 'Ann', seconds: 41 }, { name: 'Bo', seconds: 50 }])
 })
+
+test('laps under 20 seconds are refused and never reach the board', async (t) =>
+{
+    const { server, call } = await start()
+    t.after(() => server.close())
+
+    const { body: { token } } = await call('POST', '/api/names', { name: 'Cy' })
+
+    const fast = await call('POST', '/api/laps', { name: 'Cy', token, seconds: 19.99 })
+    assert.equal(fast.status, 400)
+    assert.equal(fast.body.error, 'Too fast to be real.')
+    assert.deepEqual((await call('GET', '/api/leaderboard')).body.laps, [])
+
+    const edge = await call('POST', '/api/laps', { name: 'Cy', token, seconds: 20 })
+    assert.deepEqual(edge.body, { best: 20, improved: true })
+})

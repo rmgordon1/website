@@ -9,13 +9,18 @@ import { createHash, randomBytes, timingSafeEqual } from 'node:crypto'
  *                                         200 { name } already yours
  *                                         409 { error } someone else's
  *   POST /api/laps    { name, token, seconds } -> 200 { best, improved }
+ *                                         400 { error } under LAP_MIN_SECONDS
  *   GET  /api/leaderboard?limit=10     -> { laps: [{ name, seconds }] }
  */
 
 export const NAME_MAX = 16
 const ALLOWED = /^[\p{L}\p{N} ._-]+$/u
-/** Anything outside this is not a real lap. */
-const LAP_MIN_SECONDS = 1
+/**
+ * Anything outside this is not a real lap. Nobody flies the course in under
+ * 20 seconds; the game blows the elephant up for it (threejs/src/game/PlayerName.js
+ * has the same number), and this keeps a hand-made POST off the board too.
+ */
+export const LAP_MIN_SECONDS = 20
 const LAP_MAX_SECONDS = 60 * 60
 const BODY_LIMIT = 4 * 1024
 
@@ -107,8 +112,8 @@ export function createApp(db)
         if (!player || !tokenMatches(token, player.token_hash)) throw new HttpError(403, 'Not your name.')
 
         const time = Number(seconds)
-        if (!Number.isFinite(time) || time < LAP_MIN_SECONDS || time > LAP_MAX_SECONDS)
-            throw new HttpError(400, 'Not a lap time.')
+        if (!Number.isFinite(time) || time > LAP_MAX_SECONDS) throw new HttpError(400, 'Not a lap time.')
+        if (time < LAP_MIN_SECONDS) throw new HttpError(400, 'Too fast to be real.')
 
         const before = findBest.get(player.id)?.seconds ?? null
         upsertBest.run(player.id, time)

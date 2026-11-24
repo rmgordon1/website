@@ -9,7 +9,10 @@ import { Elephant, ELEPHANT } from '../src/entities/Elephant.js'
 import { Castle, CASTLE, CASTLE_RING, CLOUD_LAYOUT, MAIN_YAW, DECK_Y, measureFlightVoxels, voxelSphereHits, voxelSweepSphere } from '../src/world/Castle.js'
 import { Cloud, buildCloudGeometry, placePuffs } from '../src/world/Cloud.js'
 import { HOOP_COUNT, HOOP_Z_JITTER, Racetrack, hoopPoint, paintFlag } from '../src/world/Racetrack.js'
-import { Confetti } from '../src/world/Confetti.js'
+import { CHEATER_BURST, Confetti } from '../src/world/Confetti.js'
+import { LEADERBOARD_ROWS, leaderboardLines } from '../src/world/LeaderboardText.js'
+import { LAP_MIN_SECONDS } from '../src/game/PlayerName.js'
+import { formatLap } from '../src/game/HUD.js'
 import { BrickWall, brickSlots, BRICK } from '../src/world/BrickWall.js'
 import { DockBeacons } from '../src/world/DockBeacons.js'
 import { fitToEnvelope, solidifyTusks } from '../src/entities/elephantModel.js'
@@ -1238,6 +1241,32 @@ group('cloud', () =>
     }
     const swing = Math.max(...heights) - Math.min(...heights)
     check('the cloud bobs gently', swing > 0.05 && swing < 0.2, swing.toFixed(3))
+})
+
+group('Leaderboard and the cheater burst', () =>
+{
+    const laps = Array.from({ length: 9 }, (_, index) => ({ name: `P${index}`, seconds: 25 + index * 7.25 }))
+    const lines = leaderboardLines(laps)
+    check('the board holds six laps at most', LEADERBOARD_ROWS === 6 && lines.length === 6, String(lines.length))
+    check('each strip reads rank, name, time', lines[0].rank === '1.' && lines[0].name === 'P0' && lines[0].time === '0:25.0'
+        && lines[5].rank === '6.' && lines[5].time === '1:01.2', JSON.stringify(lines[5]))
+    check('fewer laps leave the rest blank', leaderboardLines(laps.slice(0, 2)).length === 2 && leaderboardLines(null).length === 0)
+    check('junk from the server is skipped', leaderboardLines([{ name: 'A' }, null, { name: 'B', seconds: 30 }]).length === 1)
+
+    check('times read to the tenth, never rounded up', formatLap(38.9) === '0:38.9' && formatLap(41.27) === '0:41.2'
+        && formatLap(59.99) === '0:59.9' && formatLap(60) === '1:00.0' && formatLap(125.4) === '2:05.4' && formatLap(-1) === '0:00.0',
+        [38.9, 41.27, 59.99, 60, 125.4].map(formatLap).join(' '))
+    check('a cheat is anything under 20 seconds', LAP_MIN_SECONDS === 20)
+
+    const origin = new THREE.Vector3(1, 2, 3)
+    const explosion = new Confetti(CHEATER_BURST)
+    explosion.burst(origin, 4)
+    const reds = CHEATER_BURST.colours.every((colour) => colour.r > colour.g * 3 && colour.r > colour.b * 3)
+    check('the cheater burst is denser than a lap\'s, and red', explosion.aliveCount() > 220 * 4 && reds, String(explosion.aliveCount()))
+    const distances = explosion.pieces.map((piece) => piece.position.distanceTo(origin))
+    check('it starts across her whole body', Math.max(...distances) <= 4 && Math.max(...distances) > 3, Math.max(...distances).toFixed(2))
+    for (let step = 0; step < 60; step++) explosion.update(0.1)
+    check('and is gone a few seconds later', explosion.aliveCount() === 0, String(explosion.aliveCount()))
 })
 
 console.log(`\n${checks - failures}/${checks} checks passed`)

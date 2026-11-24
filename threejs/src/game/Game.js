@@ -5,12 +5,13 @@ import { Environment } from '../world/Environment.js'
 import { Castle, CASTLE, CASTLE_RING, MAIN_YAW, voxelSweepSphere } from '../world/Castle.js'
 import { Interior } from '../world/Interior.js'
 import { HOOP_COUNT, Racetrack } from '../world/Racetrack.js'
-import { Confetti } from '../world/Confetti.js'
+import { CHEATER_BURST, Confetti } from '../world/Confetti.js'
+import { LEADERBOARD_ROWS } from '../world/LeaderboardText.js'
 import { BrickWall, cubeSlots } from '../world/BrickWall.js'
 import { DockBeacons } from '../world/DockBeacons.js'
 import { Elephant, ELEPHANT } from '../entities/Elephant.js'
 import { Player } from '../player/Player.js'
-import { claimName, nameProblem, rememberName, rememberedName, submitLap, tidyName } from './PlayerName.js'
+import { LAP_MIN_SECONDS, claimName, fetchLeaderboard, nameProblem, rememberName, rememberedName, submitLap, tidyName } from './PlayerName.js'
 import { preloadPortfolio, goToPortfolio } from './Portfolio.js'
 
 const LOOK_SENSITIVITY = 0.0025
@@ -106,10 +107,17 @@ export class Game
         this.#setupScene()
         this.#setupWorld()
 
+        // Once, as the page opens. Offline, the board just stays blank.
+        fetchLeaderboard(LEADERBOARD_ROWS).then((laps) =>
+        {
+            if (laps) this.castle.setLeaderboard(laps)
+        })
+
         this.input = new Input(canvas)
         this.hud = new HUD()
         this.hud.onStart(() =>
         {
+            if (this.busted) return
             this.hud.setStartHint('')
             this.input.requestLock()
         })
@@ -125,11 +133,14 @@ export class Game
         this.hud.onNameSubmit((typed) => this.#submitName(typed))
         this.input.onLockChange = (locked) =>
         {
-            if (this.leaving) return
+            if (this.leaving || this.busted) return
             // Sent back to the name screen (the name was taken): that screen stays, not "paused".
             if (!locked && this.playerName === null) return
             locked ? this.hud.hideStart() : this.hud.showStart()
         }
+
+        /** Set by a lap too fast to be real. The game is over until the page is reloaded. */
+        this.busted = false
 
         /** Set once a "portfolio" button is pressed. The game is over from then on. */
         this.leaving = null
@@ -538,6 +549,9 @@ export class Game
 
         this.confetti = new Confetti()
         this.scene.add(this.confetti.group)
+        /** The elephant, after a cheated lap. */
+        this.explosion = new Confetti(CHEATER_BURST)
+        this.scene.add(this.explosion.group)
 
         /** A column of light on every dock she can land on. */
         this.dockBeacons = new DockBeacons([this.castle, ...this.outerCastles].map((castle) => castle.dockTip(new THREE.Vector3())))
@@ -641,16 +655,16 @@ export class Game
         return null
     }
 
-    /** Debug menu: end a running lap as if the last ring had just been flown. */
+    /**
+     * Debug menu: end a running lap as if the last ring had just been flown.
+     * Not sent to the server, but held to the same rule: under 20 seconds is a cheat.
+     */
     debugFinishLap()
     {
         if (!this.hud.lapRunning) return 'No lap is running. Fly through a ring to start the timer.'
 
         this.racetrack.completeLap()
-        this.hud.stopLap()
-        const origin = this.scratchB.copy(this.elephant.position)
-        origin.y += ELEPHANT.back * 0.65
-        this.confetti.burst(origin)
+        this.#finishLap({ save: false })
         return null
     }
 
@@ -738,6 +752,14 @@ export class Game
         if (this.leaving)
         {
             this.#updateLeaving(delta)
+            this.renderer.render(this.scene, this.camera)
+            this.input.endFrame()
+            return
+        }
+
+        if (this.busted)
+        {
+            this.#updateBusted(delta)
             this.renderer.render(this.scene, this.camera)
             this.input.endFrame()
             return
@@ -899,14 +921,57 @@ export class Game
         if (!gate) return
 
         if (gate.started) this.hud.startLap()
-        if (gate.lap)
+        if (gate.lap) this.#finishLap({ save: true })
+    }
+
+    /** The clock stops. A real lap gets confetti (and is saved); one too fast ends the game. */
+    #finishLap({ save })
+    {
+        this.hud.stopLap()
+        const seconds = this.hud.lapTime
+        if (seconds < LAP_MIN_SECONDS)
         {
-            this.hud.stopLap()
-            this.#recordLap(this.hud.lapTime)
-            const origin = this.scratchB.copy(this.elephant.position)
-            origin.y += ELEPHANT.back * 0.65
-            this.confetti.burst(origin)
+            this.#caughtCheating()
+            return
         }
+
+        if (save) this.#recordLap(seconds)
+        const origin = this.scratchB.copy(this.elephant.position)
+        origin.y += ELEPHANT.back * 0.65
+        this.confetti.burst(origin)
+    }
+
+    /**
+     * A lap under LAP_MIN_SECONDS. The elephant bursts into red confetti,
+     * "cheater" goes up in red neon, and nothing more can be done: no
+     * controls, no pause screen, until the page is reloaded. The lap is never sent.
+     */
+    #caughtCheating()
+    {
+        if (this.busted) return
+        this.busted = true
+
+        const origin = this.scratchB.copy(this.elephant.position)
+        origin.y += ELEPHANT.back * 0.5
+        this.explosion.burst(origin, ELEPHANT.length * 0.35)
+        this.elephant.group.visible = false
+        this.elephant.effects.visible = false
+
+        if (document.pointerLockElement) document.exitPointerLock()
+        this.hud.showCheater()
+    }
+
+    /** After a cheated lap: the camera stays put while the pieces fall, and the world keeps idling. */
+    #updateBusted(delta)
+    {
+        this.elapsed += delta
+        this.explosion.update(delta)
+        this.confetti.update(delta)
+        this.castle.update(delta)
+        for (const castle of this.outerCastles) castle.update(delta)
+        this.racetrack.update(delta, this.elapsed)
+        this.hud.update(delta)
+        this.environment.update(this.#focusPosition())
     }
 
     /** Saves a finished lap under the player's name, and says so when it is a new best. */

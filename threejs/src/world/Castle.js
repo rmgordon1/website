@@ -4,6 +4,7 @@ import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js'
 import { ReentryFire } from './ReentryFire.js'
 import { assetUrl } from '../config.js'
 import { loadCloud } from './Cloud.js'
+import { LeaderboardText } from './LeaderboardText.js'
 import { simplifyByClustering } from './simplifyByClustering.js'
 
 /** The outer castles. Served out of static/. */
@@ -1558,6 +1559,10 @@ export class Castle
             this.hoop = null
             /** The board inside the gate wall. Null until it has arrived. */
             this.leaderboard = null
+            /** The laps written on it. Null until the board has arrived. */
+            this.leaderboardText = null
+            /** The laps to write, kept for whichever of board and laps arrives last. */
+            this.leaderboardLaps = []
             /** Solid voxels the elephant cannot fly through. Filled in when the mesh arrives. */
             this.flightVoxels = null
             this.berth = CASTLE.elephant
@@ -1650,6 +1655,10 @@ export class Castle
                             model.add(board)
                             this.leaderboard = board
                             this.walls.push(leaderboardWall())
+
+                            this.leaderboardText = new LeaderboardText()
+                            this.leaderboardText.show(this.leaderboardLaps)
+                            board.add(this.leaderboardText.mesh)
                         })
                         .catch((error) =>
                         {
@@ -1701,6 +1710,13 @@ export class Castle
     }
 
     /** Point sprites are sized in device pixels, so they track the drawing buffer. */
+    /** The best laps, fastest first, for the board. Written as soon as the board is up. */
+    setLeaderboard(laps)
+    {
+        this.leaderboardLaps = laps
+        this.leaderboardText?.show(laps)
+    }
+
     setViewport(height, fov)
     {
         this.viewport = { height, fov }

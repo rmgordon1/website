@@ -3,12 +3,15 @@ const METRES_PER_SECOND_TO_KNOTS = 1.94384
 /** How long a finished lap stays on screen. */
 const LAP_HOLD = 4
 
-function formatLap(seconds)
+/** m:ss.t, the way the lap clock and the leaderboard show a time. */
+export function formatLap(seconds)
 {
-    const clamped = Math.max(0, seconds)
-    const minutes = Math.floor(clamped / 60)
-    const whole = Math.floor(clamped % 60)
-    const tenths = Math.floor((clamped % 1) * 10)
+    // Whole tenths first: 38.9 % 1 is 0.8999..., which would read 38.8. The
+    // nudge keeps a time that is exactly on a tenth from dropping to the one below.
+    const totalTenths = Math.floor(Math.max(0, seconds) * 10 + 1e-6)
+    const minutes = Math.floor(totalTenths / 600)
+    const whole = Math.floor(totalTenths / 10) % 60
+    const tenths = totalTenths % 10
 
     return `${minutes}:${String(whole).padStart(2, '0')}.${tenths}`
 }
@@ -38,6 +41,7 @@ export class HUD
         this.aimLabel = document.querySelector('[data-aim-label]')
         this.invertLabel = document.querySelector('[data-invert-label]')
         this.crosshairElement = document.querySelector('[data-crosshair]')
+        this.cheaterElement = document.querySelector('[data-cheater]')
         this.controlMode = 'walking'
         this.pitchInverted = false
 
@@ -109,6 +113,15 @@ export class HUD
     {
         this.nameHint.textContent = text ?? ''
         this.nameHint.hidden = !text
+    }
+
+    /** The end of a cheated lap: the HUD goes, and "cheater" stays up for good. */
+    showCheater()
+    {
+        this.hideStart()
+        this.hideNameScreen()
+        document.body.classList.add('is-busted')
+        this.cheaterElement.hidden = false
     }
 
     setPrompt(text)

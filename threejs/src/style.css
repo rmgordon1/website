@@ -476,3 +476,58 @@ body.is-leaving .loading
     display: block;
     opacity: 1;
 }
+
+/* ---------------------------------------------------------------- cheater */
+
+/*
+ * A lap too fast to be real. The elephant is gone and the game is over until
+ * the page is reloaded: the HUD goes, and this stays up in the start screen's
+ * red neon, buzzing like a sign on its last legs.
+ */
+.cheater
+{
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 20;
+    color: #ff1a0d;
+    font-family: "Neon", sans-serif;
+    font-size: clamp(4rem, 12vw, 9rem);
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    text-shadow:
+        0 0 0.06em #fff3f0,
+        0 0 0.14em rgba(255, 26, 13, 0.95),
+        0 0 0.5em rgba(225, 6, 0, 0.6),
+        0 0 1.2em rgba(225, 6, 0, 0.35);
+    pointer-events: none;
+    animation: cheater-buzz 3.2s steps(1, end) infinite;
+}
+
+.cheater[hidden]
+{
+    display: none;
+}
+
+body.is-busted .ui
+{
+    display: none;
+}
+
+@keyframes cheater-buzz
+{
+    0%, 100% { opacity: 1; }
+    61% { opacity: 0.35; }
+    63% { opacity: 1; }
+    66% { opacity: 0.5; }
+    67% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce)
+{
+    .cheater
+    {
+        animation: none;
+    }
+}

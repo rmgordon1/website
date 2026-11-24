@@ -11,6 +11,11 @@ import { API_BASE } from '../config.js'
  */
 
 export const NAME_MAX = 16
+/**
+ * Nobody flies the course this fast. A lap under it is a cheat: the game
+ * ends, and the server refuses it too (LAP_MIN_SECONDS in api/src/app.js).
+ */
+export const LAP_MIN_SECONDS = 20
 const STORAGE_KEY = 'playerName'
 /** { [nameKey]: token } for every name this browser has claimed. */
 const TOKENS_KEY = 'playerTokens'
@@ -151,6 +156,26 @@ export async function submitLap(name, seconds)
     {
         const { status, data } = await post('/laps', { name, token, seconds })
         return status === 200 ? data : null
+    }
+    catch
+    {
+        return null
+    }
+}
+
+/**
+ * The fastest laps, best first, or null when the server cannot be reached.
+ *
+ * @returns {Promise<{ name: string, seconds: number }[] | null>}
+ */
+export async function fetchLeaderboard(limit)
+{
+    try
+    {
+        const response = await fetch(`${API_BASE}/leaderboard?limit=${limit}`)
+        if (!response.ok) return null
+        const data = await response.json()
+        return Array.isArray(data?.laps) ? data.laps : null
     }
     catch
     {
